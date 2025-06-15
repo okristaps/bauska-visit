@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { puzzlePieceDimensions as initialPuzzleConfig, PieceDimensions, ConnectionPoint } from '../config/puzzleDimensions';
+import { puzzle1Config } from '@/config/puzzle1Config';
+import { puzzle2Config } from '@/config/puzzle2Config';
+import { PuzzleConfig, PieceDimensions, ConnectionPoint } from '@/types';
 
 // Calculate initial dimensions of the puzzle
 const TOTAL_ROWS = 2;
@@ -24,12 +26,13 @@ interface PieceState extends Position {
 interface PuzzleGameProps {
     onComplete?: () => void;
     className?: string;
+    puzzleId: number;
 }
 
-export default function PuzzleGame({ onComplete, className = '' }: PuzzleGameProps) {
+export default function PuzzleGame({ onComplete, className = '', puzzleId }: PuzzleGameProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [scaleFactor, setScaleFactor] = useState(0.2);
-    const [puzzleConfig, setPuzzleConfig] = useState(initialPuzzleConfig);
+    const [puzzleConfig, setPuzzleConfig] = useState<PuzzleConfig>(puzzleId === 1 ? puzzle1Config : puzzle2Config);
     const [lastConfigUpdate, setLastConfigUpdate] = useState(Date.now());
     const [pieces, setPieces] = useState<PieceState[]>([]);
     const [draggedPiece, setDraggedPiece] = useState<number | null>(null);
@@ -43,14 +46,14 @@ export default function PuzzleGame({ onComplete, className = '' }: PuzzleGamePro
         let totalHeight = 0;
 
         // Calculate dimensions for each row
-        for (let row = 0; row < TOTAL_ROWS; row++) {
+        for (let row = 0; row < puzzleConfig.layout.rows; row++) {
             let rowWidth = 0;
             let rowHeight = 0;
 
             // Calculate dimensions for each piece in the row
-            for (let col = 0; col < TOTAL_COLS; col++) {
-                const pieceIndex = row * TOTAL_COLS + col;
-                const piece = puzzleConfig[pieceIndex];
+            for (let col = 0; col < puzzleConfig.layout.cols; col++) {
+                const pieceIndex = row * puzzleConfig.layout.cols + col;
+                const piece = puzzleConfig.dimensions[pieceIndex];
                 if (piece) {
                     rowWidth += piece.width + PADDING;
                     rowHeight = Math.max(rowHeight, piece.height);
@@ -110,10 +113,10 @@ export default function PuzzleGame({ onComplete, className = '' }: PuzzleGamePro
         const startX = (container.clientWidth - puzzleWidth * scaleFactor) / 2;
         const startY = (container.clientHeight - puzzleHeight * scaleFactor) / 2;
 
-        setPieces(puzzleConfig.map((piece, index) => {
+        setPieces(puzzleConfig.dimensions.map((piece: PieceDimensions, index: number) => {
             const adjustedIndex = piece.id - 1;
-            const row = Math.floor(adjustedIndex / TOTAL_COLS);
-            const col = adjustedIndex % TOTAL_COLS;
+            const row = Math.floor(adjustedIndex / puzzleConfig.layout.cols);
+            const col = adjustedIndex % puzzleConfig.layout.cols;
 
             // Calculate position with padding
             let x = startX;
@@ -121,7 +124,7 @@ export default function PuzzleGame({ onComplete, className = '' }: PuzzleGamePro
 
             // Add up widths of all pieces before this one in the row
             for (let i = 0; i < col; i++) {
-                const prevPiece = puzzleConfig[row * TOTAL_COLS + i];
+                const prevPiece = puzzleConfig.dimensions[row * puzzleConfig.layout.cols + i];
                 if (prevPiece) {
                     x += (prevPiece.width + PADDING) * scaleFactor;
                 }
@@ -130,8 +133,8 @@ export default function PuzzleGame({ onComplete, className = '' }: PuzzleGamePro
             // Add up heights of all rows before this one
             for (let i = 0; i < row; i++) {
                 let maxRowHeight = 0;
-                for (let j = 0; j < TOTAL_COLS; j++) {
-                    const piece = puzzleConfig[i * TOTAL_COLS + j];
+                for (let j = 0; j < puzzleConfig.layout.cols; j++) {
+                    const piece = puzzleConfig.dimensions[i * puzzleConfig.layout.cols + j];
                     if (piece) {
                         maxRowHeight = Math.max(maxRowHeight, piece.height);
                     }
@@ -151,7 +154,7 @@ export default function PuzzleGame({ onComplete, className = '' }: PuzzleGamePro
     useEffect(() => {
         const checkConfigUpdates = async () => {
             try {
-                const response = await fetch('/api/puzzle-config');
+                const response = await fetch(`/api/puzzle-config?puzzleId=${puzzleId}`);
                 const newConfig = await response.json();
                 const configChanged = JSON.stringify(newConfig) !== JSON.stringify(puzzleConfig);
 
@@ -159,44 +162,6 @@ export default function PuzzleGame({ onComplete, className = '' }: PuzzleGamePro
                     console.log('Puzzle configuration updated');
                     setPuzzleConfig(newConfig);
                     setLastConfigUpdate(Date.now());
-
-                    setPieces(currentPieces => {
-                        return currentPieces.map(piece => {
-                            const newPieceConfig = newConfig.find((p: PieceDimensions) => p.id === piece.id);
-                            if (!newPieceConfig) return piece;
-
-                            if (piece.groupId !== `group-${piece.id}`) {
-                                const groupMainPiece = currentPieces.find(p => p.groupId === piece.groupId && p.id !== piece.id);
-                                if (groupMainPiece) {
-                                    const connection = newPieceConfig.connections.find(
-                                        (conn: ConnectionPoint) => conn.connectsTo.pieceId === groupMainPiece.id
-                                    );
-                                    if (connection) {
-                                        const mainPieceConfig = newConfig.find((p: PieceDimensions) => p.id === groupMainPiece.id);
-                                        if (mainPieceConfig) {
-                                            const targetConnection = mainPieceConfig.connections.find(
-                                                (conn: ConnectionPoint) => conn.connectsTo.pieceId === piece.id
-                                            );
-                                            if (targetConnection) {
-                                                const newPos = calculateNewPiecePosition(
-                                                    piece,
-                                                    groupMainPiece,
-                                                    connection,
-                                                    targetConnection
-                                                );
-                                                return {
-                                                    ...piece,
-                                                    x: newPos.x,
-                                                    y: newPos.y
-                                                };
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            return piece;
-                        });
-                    });
                 }
             } catch (error) {
                 console.error('Error checking for config updates:', error);
@@ -205,10 +170,10 @@ export default function PuzzleGame({ onComplete, className = '' }: PuzzleGamePro
 
         const pollInterval = setInterval(checkConfigUpdates, CONFIG_POLL_INTERVAL);
         return () => clearInterval(pollInterval);
-    }, [puzzleConfig, lastConfigUpdate]);
+    }, [puzzleConfig, lastConfigUpdate, puzzleId]);
 
     const getConnectionPointPosition = (piece: PieceState, point: ConnectionPoint): Position => {
-        const pieceData = puzzleConfig.find(p => p.id === piece.id)!;
+        const pieceData = puzzleConfig.dimensions.find((p: PieceDimensions) => p.id === piece.id)!;
         const centerX = piece.x + (pieceData.width * scaleFactor) / 2;
         const centerY = piece.y + (pieceData.height * scaleFactor) / 2;
 
@@ -228,8 +193,8 @@ export default function PuzzleGame({ onComplete, className = '' }: PuzzleGamePro
         movingPoint: ConnectionPoint,
         anchorPoint: ConnectionPoint
     ): Position => {
-        const movingPieceData = puzzleConfig.find(p => p.id === movingPiece.id)!;
-        const anchorPieceData = puzzleConfig.find(p => p.id === anchorPiece.id)!;
+        const movingPieceData = puzzleConfig.dimensions.find((p: PieceDimensions) => p.id === movingPiece.id)!;
+        const anchorPieceData = puzzleConfig.dimensions.find((p: PieceDimensions) => p.id === anchorPiece.id)!;
 
         const anchorCenterX = anchorPiece.x + (anchorPieceData.width * scaleFactor) / 2;
         const anchorCenterY = anchorPiece.y + (anchorPieceData.height * scaleFactor) / 2;
@@ -283,12 +248,12 @@ export default function PuzzleGame({ onComplete, className = '' }: PuzzleGamePro
     };
 
     const checkConnections = (pieceId: number) => {
-        const draggedPieceData = puzzleConfig.find(p => p.id === pieceId);
+        const draggedPieceData = puzzleConfig.dimensions.find(p => p.id === pieceId);
         const draggedPieceState = pieces.find(p => p.id === pieceId);
         if (!draggedPieceData || !draggedPieceState) return;
 
         draggedPieceData.connections.forEach(point => {
-            const targetPiece = puzzleConfig.find(p => p.id === point.connectsTo.pieceId);
+            const targetPiece = puzzleConfig.dimensions.find(p => p.id === point.connectsTo.pieceId);
             const targetPieceState = pieces.find(p => p.id === point.connectsTo.pieceId);
 
             if (!targetPiece || !targetPieceState || targetPieceState.groupId === draggedPieceState.groupId) return;
@@ -364,7 +329,7 @@ export default function PuzzleGame({ onComplete, className = '' }: PuzzleGamePro
             onMouseUp={() => handleDragEnd()}
         >
             {pieces.map(piece => {
-                const pieceData = puzzleConfig.find(p => p.id === piece.id)!;
+                const pieceData = puzzleConfig.dimensions.find(p => p.id === piece.id)!;
                 const isDraggingGroup = draggedPiece !== null &&
                     pieces.find(p => p.id === draggedPiece)?.groupId === piece.groupId;
 
@@ -383,7 +348,7 @@ export default function PuzzleGame({ onComplete, className = '' }: PuzzleGamePro
                         onMouseDown={e => handleDragStart(e, piece.id, piece.x, piece.y)}
                     >
                         <img
-                            src={`/assets/puzzles/puzzle_1/${piece.id}.png`}
+                            src={`/assets/puzzles/puzzle_${puzzleId}/${piece.id}.png`}
                             alt={`Puzzle piece ${piece.id}`}
                             className="w-full h-full pointer-events-none"
                             draggable={false}

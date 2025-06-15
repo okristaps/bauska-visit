@@ -1,6 +1,6 @@
 'use client';
 
-import { puzzlePieceDimensions, PieceDimensions, ConnectionPoint } from '../../config/puzzleDimensions';
+import { puzzlePieceDimensions, PieceDimensions, ConnectionPoint } from '@/config/puzzleDimensions';
 import { useState } from 'react';
 
 const SCALE_FACTOR = 0.2;

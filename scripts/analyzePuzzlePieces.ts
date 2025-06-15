@@ -1,19 +1,30 @@
 import sharp from "sharp";
 import fs from "fs/promises";
 import path from "path";
+import { PuzzleConfig, PuzzleLayout, PieceDimensions, ConnectionPoint } from "../src/types";
 
-interface PieceDimensions {
-  id: number;
-  width: number;
-  height: number;
-  // The actual bounds of the non-transparent content
-  actualBounds: {
-    left: number;
-    top: number;
-    width: number;
-    height: number;
-  };
-}
+interface Connection extends ConnectionPoint {} // Just for backward compatibility if needed
+
+const PUZZLE_CONFIGS: Record<string, Omit<PuzzleConfig, "dimensions">> = {
+  puzzle_1: {
+    id: 1,
+    name: "Bauska Castle",
+    layout: {
+      rows: 2,
+      cols: 4,
+      totalPieces: 8,
+    },
+  },
+  puzzle_2: {
+    id: 2,
+    name: "Bauska Castle Garden",
+    layout: {
+      rows: 4,
+      cols: 4,
+      totalPieces: 16,
+    },
+  },
+};
 
 async function analyzePiece(imagePath: string): Promise<PieceDimensions | null> {
   try {
@@ -58,6 +69,7 @@ async function analyzePiece(imagePath: string): Promise<PieceDimensions | null> 
         width: maxX - minX + 1,
         height: maxY - minY + 1,
       },
+      connections: [], // Empty connections array as requested
     };
   } catch (error) {
     console.error(`Error analyzing piece: ${imagePath}`, error);
@@ -65,9 +77,14 @@ async function analyzePiece(imagePath: string): Promise<PieceDimensions | null> 
   }
 }
 
-async function generatePuzzleConfig() {
+async function generatePuzzleConfig(puzzleId: string) {
   try {
-    const piecesDir = path.join(process.cwd(), "public", "assets", "puzzles", "puzzle_1");
+    const config = PUZZLE_CONFIGS[puzzleId as keyof typeof PUZZLE_CONFIGS];
+    if (!config) {
+      throw new Error(`Unknown puzzle ID: ${puzzleId}`);
+    }
+
+    const piecesDir = path.join(process.cwd(), "public", "assets", "puzzles", puzzleId);
     const files = await fs.readdir(piecesDir);
 
     const pieceFiles = files
@@ -75,11 +92,11 @@ async function generatePuzzleConfig() {
         const match = file.match(/^(\d+)\.png$/);
         if (!match) return false;
         const pieceId = parseInt(match[1]);
-        return pieceId >= 1 && pieceId <= 8; // Only pieces 1-8
+        return pieceId >= 1 && pieceId <= config.layout.totalPieces;
       })
       .sort((a, b) => parseInt(a) - parseInt(b));
 
-    console.log("Processing pieces:", pieceFiles);
+    console.log(`Processing pieces for ${config.name}:`, pieceFiles);
 
     const pieces: PieceDimensions[] = [];
 
@@ -90,32 +107,29 @@ async function generatePuzzleConfig() {
       }
     }
 
-    // Generate TypeScript configuration file
-    const configContent = `// Auto-generated puzzle piece configuration
-export interface PieceDimensions {
-  id: number;
-  width: number;
-  height: number;
-  actualBounds: {
-    left: number;
-    top: number;
-    width: number;
-    height: number;
-  };
-}
+    const puzzleConfig: PuzzleConfig = {
+      ...config,
+      dimensions: pieces,
+    };
 
-export const puzzlePieceDimensions: PieceDimensions[] = ${JSON.stringify(pieces, null, 2)};
+    // Generate TypeScript configuration file
+    const configContent = `// Auto-generated puzzle configuration
+import { PuzzleConfig } from "@/types";
+
+export const puzzle${config.id}Config: PuzzleConfig = ${JSON.stringify(puzzleConfig, null, 2)};
 `;
 
     const configDir = path.join(process.cwd(), "src", "config");
     await fs.mkdir(configDir, { recursive: true });
-    await fs.writeFile(path.join(configDir, "puzzleDimensions.ts"), configContent);
+    await fs.writeFile(path.join(configDir, `puzzle${config.id}Config.ts`), configContent);
 
-    console.log("Successfully generated puzzle configuration!");
+    console.log(`Successfully generated configuration for ${config.name}!`);
     console.log("Found pieces:", pieces.map((p) => p.id).join(", "));
   } catch (error) {
     console.error("Error generating puzzle configuration:", error);
   }
 }
 
-generatePuzzleConfig();
+// Get puzzle ID from command line argument, default to puzzle_1
+const puzzleId = process.argv[2] || "puzzle_1";
+generatePuzzleConfig(puzzleId);
