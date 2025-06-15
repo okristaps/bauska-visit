@@ -4,11 +4,9 @@ import { useState, useCallback, useEffect } from 'react';
 import { puzzlePieceDimensions as initialPuzzleConfig, PieceDimensions, ConnectionPoint } from '../../config/puzzleDimensions';
 
 const SCALE_FACTOR = 0.2;
-const DETECTION_DISTANCE = 25; // Large area for initial detection
-const SNAP_DISTANCE = 8; // Small area for actual connection
-const FINAL_SNAP_ADJUSTMENT = 1;
-const DEBUG_MODE = true;
-const CONFIG_POLL_INTERVAL = 1000; // Poll every second
+const DETECTION_DISTANCE = 25;
+const SNAP_DISTANCE = 8;
+const CONFIG_POLL_INTERVAL = 1000;
 
 interface Position {
     x: number;
@@ -25,16 +23,13 @@ export default function PuzzleGame() {
     const [lastConfigUpdate, setLastConfigUpdate] = useState(Date.now());
     const [pieces, setPieces] = useState<PieceState[]>([]);
 
-    // Initialize pieces with the current config
     useEffect(() => {
-        const padding = 20; // Padding between pieces
-        const startX = window.innerWidth * 0.1; // Start from 10% of window width
-        const startY = window.innerHeight * 0.1; // Start from 10% of window height
+        const padding = 20;
+        const startX = window.innerWidth * 0.1;
+        const startY = window.innerHeight * 0.1;
 
         setPieces(puzzleConfig.map((piece, index) => {
-            // Calculate grid position (2 rows x 4 columns)
-            // For 1234/5678 layout, we need to adjust the index
-            const adjustedIndex = piece.id - 1; // Convert piece ID (1-8) to 0-7 index
+            const adjustedIndex = piece.id - 1;
             const row = Math.floor(adjustedIndex / 4);
             const col = adjustedIndex % 4;
 
@@ -50,9 +45,6 @@ export default function PuzzleGame() {
             };
         }));
     }, [puzzleConfig]);
-
-    // Keep track of completed connections
-    const [completedConnections, setCompletedConnections] = useState<Set<number>>(new Set());
 
     const [draggedPiece, setDraggedPiece] = useState<number | null>(null);
     const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
@@ -246,11 +238,8 @@ export default function PuzzleGame() {
     };
 
     const canConnect = (point: ConnectionPoint): boolean => {
-        // If this is sequence 1, it can always connect
-        if (point.connectsTo.sequence === 1) return true;
-
-        // For higher sequences, check if previous sequences are completed
-        return completedConnections.has(point.connectsTo.sequence - 1);
+        // Allow all connections
+        return true;
     };
 
     // Calculate the final position for a new piece joining a group

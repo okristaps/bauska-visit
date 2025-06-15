@@ -91,7 +91,7 @@ export const puzzlePieceDimensions: PieceDimensions[] = [
         connectsTo: {
           pieceId: 3,
           pointId: "outdent_left_p3",
-          sequence: 2,
+          sequence: 1,
         },
       },
     ],
@@ -121,7 +121,7 @@ export const puzzlePieceDimensions: PieceDimensions[] = [
         connectsTo: {
           pieceId: 4,
           pointId: "outdent_left_p4",
-          sequence: 2,
+          sequence: 1,
         },
       },
       {
@@ -162,7 +162,7 @@ export const puzzlePieceDimensions: PieceDimensions[] = [
         connectsTo: {
           pieceId: 3,
           pointId: "indent_right_p3",
-          sequence: 2,
+          sequence: 1,
         },
       },
     ],
@@ -222,7 +222,7 @@ export const puzzlePieceDimensions: PieceDimensions[] = [
         connectsTo: {
           pieceId: 5,
           pointId: "outdent_right_p5",
-          sequence: 2,
+          sequence: 1,
         },
       },
       {
@@ -233,7 +233,7 @@ export const puzzlePieceDimensions: PieceDimensions[] = [
         connectsTo: {
           pieceId: 7,
           pointId: "outdent_left_p7",
-          sequence: 2,
+          sequence: 1,
         },
       },
     ],
@@ -263,7 +263,7 @@ export const puzzlePieceDimensions: PieceDimensions[] = [
         connectsTo: {
           pieceId: 6,
           pointId: "indent_right_p6",
-          sequence: 2,
+          sequence: 1,
         },
       },
       {
@@ -274,7 +274,7 @@ export const puzzlePieceDimensions: PieceDimensions[] = [
         connectsTo: {
           pieceId: 8,
           pointId: "indent_left_p8",
-          sequence: 2,
+          sequence: 1,
         },
       },
     ],
@@ -304,7 +304,7 @@ export const puzzlePieceDimensions: PieceDimensions[] = [
         connectsTo: {
           pieceId: 8,
           pointId: "outdent_right_p7",
-          sequence: 2,
+          sequence: 1,
         },
       },
     ],
