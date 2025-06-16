@@ -2,7 +2,8 @@
     "name": "Jigsaw Puzzle Game",
     "short_name": "Puzzle Game",
     "description": "Interactive jigsaw puzzle game with drag and drop functionality",
-    "start_url": "/puzzle",
+    "start_url": "/",
+    "scope": "/",
     "display": "fullscreen",
     "orientation": "landscape",
     "theme_color": "#667eea",
@@ -27,5 +28,11 @@
     ],
     "lang": "en",
     "dir": "ltr",
-    "prefer_related_applications": false
+    "prefer_related_applications": false,
+    "related_applications": [
+        {
+            "platform": "webapp",
+            "url": "/manifest.json"
+        }
+    ]
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import PuzzleGame from '@/components/PuzzleGame';
 import Header from '@/components/Header';
+import FullscreenPrompt from './FullscreenPrompt';
 
 interface PuzzlePageLayoutProps {
     puzzleId: number;
@@ -57,6 +58,7 @@ export default function PuzzlePageLayout({ puzzleId, title, onComplete }: Puzzle
             className="flex flex-col overflow-hidden relative"
             style={{ height: 'calc(var(--vh, 1vh) * 100)' }}
         >
+            <FullscreenPrompt />
             <Header />
 
             {timerStarted && (
