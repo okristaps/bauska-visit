@@ -80,8 +80,8 @@ export const puzzle1Config: PuzzleConfig = {
         {
           "id": "outdent_2_3",
           "type": "outdent",
-          "x": 261,
-          "y": -5,
+          "x": 263,
+          "y": -6,
           "connectsTo": {
             "pieceId": 3,
             "pointId": "outdent_3_1",
@@ -186,7 +186,7 @@ export const puzzle1Config: PuzzleConfig = {
           "id": "indent_5_1",
           "type": "indent",
           "x": -71,
-          "y": -292,
+          "y": -291,
           "connectsTo": {
             "pieceId": 1,
             "pointId": "outdent_1_2",
@@ -220,8 +220,8 @@ export const puzzle1Config: PuzzleConfig = {
         {
           "id": "outdent_6_1",
           "type": "outdent",
-          "x": -3,
-          "y": -581,
+          "x": -5,
+          "y": -579,
           "connectsTo": {
             "pieceId": 2,
             "pointId": "indent_2_2",
@@ -266,8 +266,8 @@ export const puzzle1Config: PuzzleConfig = {
         {
           "id": "outdent_7_1",
           "type": "outdent",
-          "x": 14,
-          "y": -594,
+          "x": 17,
+          "y": -593,
           "connectsTo": {
             "pieceId": 3,
             "pointId": "indent_3_2",
@@ -277,8 +277,8 @@ export const puzzle1Config: PuzzleConfig = {
         {
           "id": "outdent_7_2",
           "type": "outdent",
-          "x": -758,
-          "y": 151,
+          "x": -756,
+          "y": 152,
           "connectsTo": {
             "pieceId": 6,
             "pointId": "indent_6_3",
@@ -288,8 +288,8 @@ export const puzzle1Config: PuzzleConfig = {
         {
           "id": "outdent_7_3",
           "type": "outdent",
-          "x": 769,
-          "y": 104,
+          "x": 776,
+          "y": 107,
           "connectsTo": {
             "pieceId": 8,
             "pointId": "indent_8_1",
@@ -323,8 +323,8 @@ export const puzzle1Config: PuzzleConfig = {
         {
           "id": "outdent_8_2",
           "type": "outdent",
-          "x": -2,
-          "y": -640,
+          "x": -4,
+          "y": -633,
           "connectsTo": {
             "pieceId": 4,
             "pointId": "indent_4_2",

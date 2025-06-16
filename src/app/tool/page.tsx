@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { PuzzleConfig, ConnectionPoint, PieceDimensions } from '@/types';
 
 const ARROW_KEY_MOVE_AMOUNT = 1;
@@ -396,7 +396,46 @@ ${piece.connections.map(conn => `        {
         return positions;
     }, []);
 
-    if (isLoading || !puzzleConfigs[selectedPuzzleId]) {
+    const positionPieceRelativeTo = useCallback((
+        piece: PieceDimensions,
+        connection: ConnectionPoint,
+        anchorPiece: PieceDimensions,
+        anchorPos: { x: number, y: number }
+    ) => {
+        const anchorPoint = anchorPiece.connections.find((p: ConnectionPoint) => p.id === connection.connectsTo.pointId);
+        if (!anchorPoint) return null;
+
+        const pieceCenter = { x: piece.width / 2, y: piece.height / 2 };
+        const anchorCenter = { x: anchorPiece.width / 2, y: anchorPiece.height / 2 };
+
+        const x = anchorPos.x + (anchorCenter.x + anchorPoint.x) - (pieceCenter.x + connection.x);
+        const y = anchorPos.y + (anchorCenter.y + anchorPoint.y) - (pieceCenter.y + connection.y);
+
+        return { x, y };
+    }, []);
+
+    const selectedPuzzle = puzzleConfigs[selectedPuzzleId];
+
+    const connectionPairs = useMemo(() => {
+        const uniqueConnections = new Set<string>();
+        if (selectedPuzzle) {
+            selectedPuzzle.dimensions.forEach(piece => {
+                piece.connections.forEach(conn => {
+                    if (conn.connectsTo && conn.connectsTo.pieceId !== 0) {
+                        const targetPiece = selectedPuzzle.dimensions.find(p => p.id === conn.connectsTo.pieceId);
+                        const returnConn = targetPiece?.connections.find(c => c.connectsTo.pieceId === piece.id && c.connectsTo.pointId === conn.id);
+                        if (returnConn) {
+                            const pair = [piece.id, conn.connectsTo.pieceId].sort((a, b) => a - b);
+                            uniqueConnections.add(JSON.stringify(pair));
+                        }
+                    }
+                });
+            });
+        }
+        return Array.from(uniqueConnections).map(p => JSON.parse(p) as [number, number]);
+    }, [selectedPuzzle]);
+
+    if (isLoading || !selectedPuzzle) {
         return (
             <div className="min-h-screen bg-gray-100 p-8 flex items-center justify-center">
                 <div className="text-xl font-semibold text-gray-600">Loading puzzle configurations...</div>
@@ -404,7 +443,6 @@ ${piece.connections.map(conn => `        {
         );
     }
 
-    const selectedPuzzle = puzzleConfigs[selectedPuzzleId];
     const pieces = [...selectedPuzzle.dimensions].sort((a, b) => a.id - b.id);
 
     return (
@@ -535,76 +573,66 @@ ${piece.connections.map(conn => `        {
             </div>
 
             {/* Bottom section - Preview */}
-            <div className="bg-white rounded-xl shadow-lg p-4 flex-1">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold text-black">Preview</h2>
+            <div className="bg-white rounded-xl shadow-lg p-4 flex-1 flex flex-col">
+                <div className="flex justify-between items-center mb-4 border-b pb-2">
+                    <h2 className="text-xl font-bold text-black">Connection Previews</h2>
                     <div className="text-sm text-gray-500">
-                        Shows assembled puzzle with connected pieces
+                        Showing {connectionPairs.length} unique two-way connections
                     </div>
                 </div>
                 <div
                     ref={previewRef}
-                    className="relative w-full h-full flex items-start justify-start overflow-auto"
+                    className="relative w-full flex-1 overflow-y-auto"
                 >
-                    {(() => {
-                        const positions = calculatePiecePositions(pieces);
-                        if (positions.size === 0) return null;
+                    <div className="flex flex-wrap gap-4 p-4">
+                        {connectionPairs.map(([id1, id2]) => {
+                            const piece1 = pieces.find(p => p.id === id1);
+                            const piece2 = pieces.find(p => p.id === id2);
 
-                        // Find bounds to center the preview
-                        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-                        positions.forEach((pos, id) => {
-                            const piece = pieces.find(p => p.id === id);
-                            if (!piece) return;
-                            minX = Math.min(minX, pos.x);
-                            minY = Math.min(minY, pos.y);
-                            maxX = Math.max(maxX, pos.x + piece.width);
-                            maxY = Math.max(maxY, pos.y + piece.height);
-                        });
+                            if (!piece1 || !piece2) return null;
 
-                        // Offset to center and ensure no negative positions
-                        const offsetX = -minX;
-                        const offsetY = -minY;
-                        const puzzleWidth = (maxX - minX) * scaleFactor;
-                        const puzzleHeight = (maxY - minY) * scaleFactor;
+                            const connection2to1 = piece2.connections.find(c => c.connectsTo.pieceId === piece1.id);
+                            if (!connection2to1) return null;
 
-                        return (
-                            <div className="relative" style={{ width: puzzleWidth, height: puzzleHeight }}>
-                                {pieces.map((piece) => {
-                                    const pos = positions.get(piece.id);
-                                    if (!pos) return null;
+                            const pos1 = { x: 0, y: 0 };
+                            const pos2 = positionPieceRelativeTo(piece2, connection2to1, piece1, pos1);
+                            if (!pos2) return null;
 
-                                    return (
-                                        <div
-                                            key={piece.id}
-                                            className="absolute"
-                                            style={{
-                                                left: (pos.x + offsetX) * scaleFactor,
-                                                top: (pos.y + offsetY) * scaleFactor,
-                                                width: piece.width * scaleFactor,
-                                                height: piece.height * scaleFactor,
-                                            }}
-                                        >
-                                            <img
-                                                src={`/assets/puzzles/puzzle_${selectedPuzzleId}/${piece.id}.png`}
-                                                alt={`Piece ${piece.id}`}
-                                                className="w-full h-full object-contain"
-                                            />
-                                            {piece.connections.map((point) => (
-                                                <div
-                                                    key={point.id}
-                                                    className={`absolute w-2 h-2 rounded-full ${point.type === 'indent' ? 'bg-blue-500' : 'bg-red-500'}`}
-                                                    style={{
-                                                        left: (piece.width / 2 + point.x) * scaleFactor - 4,
-                                                        top: (piece.height / 2 + point.y) * scaleFactor - 4,
-                                                    }}
-                                                />
-                                            ))}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        );
-                    })()}
+                            const allX = [pos1.x, pos2.x, pos1.x + piece1.width, pos2.x + piece2.width];
+                            const allY = [pos1.y, pos2.y, pos1.y + piece1.height, pos2.y + piece2.height];
+                            const minX = Math.min(...allX);
+                            const minY = Math.min(...allY);
+                            const maxX = Math.max(...allX);
+                            const maxY = Math.max(...allY);
+
+                            const containerWidth = maxX - minX;
+                            const containerHeight = maxY - minY;
+                            const offsetX = -minX;
+                            const offsetY = -minY;
+                            const previewScale = 0.15;
+
+                            return (
+                                <div key={`${id1}-${id2}`} className="border rounded-lg p-2 bg-gray-50 relative flex-shrink-0" style={{ width: containerWidth * previewScale, height: containerHeight * previewScale }}>
+                                    <div className="absolute" style={{
+                                        left: (pos1.x + offsetX) * previewScale,
+                                        top: (pos1.y + offsetY) * previewScale,
+                                        width: piece1.width * previewScale,
+                                        height: piece1.height * previewScale
+                                    }}>
+                                        <img src={`/assets/puzzles/puzzle_${selectedPuzzleId}/${piece1.id}.png`} alt={`Piece ${piece1.id}`} className="w-full h-full" />
+                                    </div>
+                                    <div className="absolute" style={{
+                                        left: (pos2.x + offsetX) * previewScale,
+                                        top: (pos2.y + offsetY) * previewScale,
+                                        width: piece2.width * previewScale,
+                                        height: piece2.height * previewScale
+                                    }}>
+                                        <img src={`/assets/puzzles/puzzle_${selectedPuzzleId}/${piece2.id}.png`} alt={`Piece ${piece2.id}`} className="w-full h-full" />
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
         </div>
