@@ -157,27 +157,33 @@ export default function PuzzleConfigTool() {
 
     const onDotClick = useCallback((pieceId: number, pointId: string) => {
         if (linkingPoint) {
+            // Cancel linking if the source point is clicked again
             if (linkingPoint.pieceId === pieceId && linkingPoint.pointId === pointId) {
                 setLinkingPoint(null);
                 setSelectedPoint({ pieceId, pointId });
                 return;
             }
 
-            const updatedConfig = { ...puzzleConfigs[selectedPuzzleId] };
+            // Create a deep copy of the config to ensure immutable updates
+            const updatedConfig = JSON.parse(JSON.stringify(puzzleConfigs[selectedPuzzleId])) as PuzzleConfig;
+
+            // Find pieces and points from the deep copy
             const sourcePiece = updatedConfig.dimensions.find(p => p.id === linkingPoint.pieceId);
-            if (!sourcePiece) return;
-            const sourcePoint = sourcePiece.connections.find(p => p.id === linkingPoint.pointId);
-            if (!sourcePoint) return;
-
+            const sourcePoint = sourcePiece?.connections.find(p => p.id === linkingPoint.pointId);
             const targetPiece = updatedConfig.dimensions.find(p => p.id === pieceId);
-            if (!targetPiece) return;
-            const targetPoint = targetPiece.connections.find(p => p.id === pointId);
-            if (!targetPoint) return;
+            const targetPoint = targetPiece?.connections.find(p => p.id === pointId);
 
+            if (!sourcePiece || !sourcePoint || !targetPiece || !targetPoint) return;
+
+            // Apply the two-way link
             sourcePoint.connectsTo = { pieceId: targetPiece.id, pointId: targetPoint.id, sequence: 1 };
             targetPoint.connectsTo = { pieceId: sourcePiece.id, pointId: sourcePoint.id, sequence: 1 };
 
-            setPuzzleConfigs({ ...puzzleConfigs, [selectedPuzzleId]: updatedConfig });
+            // Set the new state with the updated config
+            setPuzzleConfigs(prevConfigs => ({
+                ...prevConfigs,
+                [selectedPuzzleId]: updatedConfig
+            }));
             setLinkingPoint(null);
         } else {
             setSelectedPoint({ pieceId, pointId });

@@ -21,13 +21,13 @@ export const puzzle2Config: PuzzleConfig = {
       },
       "connections": [
         {
-          "id": "indent_1_1",
-          "type": "indent",
-          "x": 303,
-          "y": -36,
+          "id": "outdent_1_1",
+          "type": "outdent",
+          "x": 418,
+          "y": -58,
           "connectsTo": {
             "pieceId": 2,
-            "pointId": "outdent_2_1",
+            "pointId": "indent_2_1",
             "sequence": 1
           }
         }
@@ -45,13 +45,35 @@ export const puzzle2Config: PuzzleConfig = {
       },
       "connections": [
         {
-          "id": "outdent_2_1",
-          "type": "outdent",
-          "x": -342,
-          "y": 54,
+          "id": "indent_2_1",
+          "type": "indent",
+          "x": -229,
+          "y": 35,
           "connectsTo": {
             "pieceId": 1,
-            "pointId": "indent_1_1",
+            "pointId": "outdent_1_1",
+            "sequence": 1
+          }
+        },
+        {
+          "id": "indent_2_2",
+          "type": "indent",
+          "x": 168,
+          "y": -3,
+          "connectsTo": {
+            "pieceId": 3,
+            "pointId": "outdent_3_1",
+            "sequence": 1
+          }
+        },
+        {
+          "id": "indent_2_3",
+          "type": "indent",
+          "x": 19,
+          "y": 171,
+          "connectsTo": {
+            "pieceId": 6,
+            "pointId": "outdent_6_1",
             "sequence": 1
           }
         }
@@ -67,7 +89,41 @@ export const puzzle2Config: PuzzleConfig = {
         "width": 1027,
         "height": 777
       },
-      "connections": []
+      "connections": [
+        {
+          "id": "outdent_3_1",
+          "type": "outdent",
+          "x": -500,
+          "y": -7,
+          "connectsTo": {
+            "pieceId": 2,
+            "pointId": "indent_2_2",
+            "sequence": 1
+          }
+        },
+        {
+          "id": "indent_3_2",
+          "type": "indent",
+          "x": 309,
+          "y": 4,
+          "connectsTo": {
+            "pieceId": 4,
+            "pointId": "outdent_4_1",
+            "sequence": 1
+          }
+        },
+        {
+          "id": "indent_3_3",
+          "type": "indent",
+          "x": 84,
+          "y": 182,
+          "connectsTo": {
+            "pieceId": 7,
+            "pointId": "outdent_7_1",
+            "sequence": 1
+          }
+        }
+      ]
     },
     {
       "id": 4,
@@ -79,7 +135,30 @@ export const puzzle2Config: PuzzleConfig = {
         "width": 934,
         "height": 973
       },
-      "connections": []
+      "connections": [
+        {
+          "id": "outdent_4_1",
+          "type": "outdent",
+          "x": -445,
+          "y": -93,
+          "connectsTo": {
+            "pieceId": 3,
+            "pointId": "indent_3_2",
+            "sequence": 1
+          }
+        },
+        {
+          "id": "outdent_4_2",
+          "type": "outdent",
+          "x": 101,
+          "y": 410,
+          "connectsTo": {
+            "pieceId": 8,
+            "pointId": "indent_8_1",
+            "sequence": 1
+          }
+        }
+      ]
     },
     {
       "id": 5,
@@ -103,7 +182,19 @@ export const puzzle2Config: PuzzleConfig = {
         "width": 784,
         "height": 1192
       },
-      "connections": []
+      "connections": [
+        {
+          "id": "outdent_6_1",
+          "type": "outdent",
+          "x": 8,
+          "y": -563,
+          "connectsTo": {
+            "pieceId": 2,
+            "pointId": "indent_2_3",
+            "sequence": 1
+          }
+        }
+      ]
     },
     {
       "id": 7,
@@ -115,7 +206,19 @@ export const puzzle2Config: PuzzleConfig = {
         "width": 968,
         "height": 975
       },
-      "connections": []
+      "connections": [
+        {
+          "id": "outdent_7_1",
+          "type": "outdent",
+          "x": 95,
+          "y": -463,
+          "connectsTo": {
+            "pieceId": 3,
+            "pointId": "indent_3_3",
+            "sequence": 1
+          }
+        }
+      ]
     },
     {
       "id": 8,
@@ -127,7 +230,19 @@ export const puzzle2Config: PuzzleConfig = {
         "width": 983,
         "height": 810
       },
-      "connections": []
+      "connections": [
+        {
+          "id": "indent_8_1",
+          "type": "indent",
+          "x": 126,
+          "y": -235,
+          "connectsTo": {
+            "pieceId": 4,
+            "pointId": "outdent_4_2",
+            "sequence": 1
+          }
+        }
+      ]
     },
     {
       "id": 9,
