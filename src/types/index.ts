@@ -35,3 +35,13 @@ export interface PuzzleConfig {
   layout: PuzzleLayout;
   dimensions: PieceDimensions[];
 }
+
+export interface Position {
+  x: number;
+  y: number;
+}
+
+export interface PieceState extends Position {
+  id: number;
+  groupId: string;
+}
