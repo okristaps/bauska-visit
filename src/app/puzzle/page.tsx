@@ -1,26 +1,12 @@
 'use client';
 
-import PuzzleGame from '@/components/PuzzleGame';
+import PuzzlePageLayout from '@/components/PuzzlePageLayout';
 
 export default function PuzzlePage() {
     return (
-        <div className="flex flex-col h-[100vh] overflow-hidden">
-            <div className="flex-none h-[10vh] flex justify-center items-center">
-                <h1 className="text-2xl font-bold">Bauska Castle</h1>
-            </div>
-            <div className="flex-1 relative">
-                <PuzzleGame
-                    className="absolute inset-0"
-                    puzzleId={1}
-                    onComplete={() => {
-                        console.log('Puzzle completed!');
-                        // You can add any completion logic here
-                    }}
-                />
-            </div>
-            <div className="flex-none h-[10vh] flex justify-center items-center">
-                <p className="text-gray-600">Arrange the pieces to complete the puzzle</p>
-            </div>
-        </div>
+        <PuzzlePageLayout
+            puzzleId={1}
+            title="Bauska Castle"
+        />
     );
 } 
