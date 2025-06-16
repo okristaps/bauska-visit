@@ -17,7 +17,7 @@ interface UsePuzzleOptions {
 
 export const usePuzzle = ({ puzzleId, onComplete, onTimeUpdate }: UsePuzzleOptions) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scaleFactor, setScaleFactor] = useState(0.2);
+  const [scaleFactor, setScaleFactor] = useState(1);
   const [puzzleConfig, setPuzzleConfig] = useState<PuzzleConfig>(puzzleId === 1 ? puzzle1Config : puzzle2Config);
   const [pieces, setPieces] = useState<PieceState[]>([]);
   const draggedPieceRef = useRef<number | null>(null);

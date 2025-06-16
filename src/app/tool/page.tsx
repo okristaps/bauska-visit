@@ -6,6 +6,7 @@ import { Toolbar } from './components/Toolbar';
 import { PuzzleGrid } from './components/PuzzleGrid';
 import { ConnectionPreview } from './components/ConnectionPreview';
 import { AllConnectionsPreview } from './components/AllConnectionsPreview';
+import DeviceRestriction from '@/components/DeviceRestriction';
 
 const ARROW_KEY_MOVE_AMOUNT = 1;
 
@@ -14,7 +15,15 @@ interface SelectedPoint {
     pointId: string;
 }
 
-export default function PuzzleConfigTool() {
+export default function PuzzleConfigToolPage() {
+    return (
+        <DeviceRestriction>
+            <PuzzleConfigTool />
+        </DeviceRestriction>
+    );
+}
+
+function PuzzleConfigTool() {
     const [showIds, setShowIds] = useState(true);
     const [puzzleConfigs, setPuzzleConfigs] = useState<Record<number, PuzzleConfig>>({});
     const [selectedPuzzleId, setSelectedPuzzleId] = useState<number>(1);

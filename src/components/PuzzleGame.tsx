@@ -22,7 +22,7 @@ export default function PuzzleGame({ onComplete, className = '', puzzleId, onTim
     return (
         <div
             {...getContainerProps()}
-            className={`h-full bg-gray-800 relative overflow-hidden ${className}`}
+            className={`h-full relative overflow-hidden ${className}`}
         >
             {pieces.map((piece: PieceState) => {
                 const { key, ...pieceProps } = getPieceProps(piece);
