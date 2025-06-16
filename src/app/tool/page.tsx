@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { PuzzleConfig, ConnectionPoint, PieceDimensions } from '@/types';
+import { Toolbar } from './components/Toolbar';
+import { PuzzleGrid } from './components/PuzzleGrid';
+import { ConnectionPreview } from './components/ConnectionPreview';
+import { AllConnectionsPreview } from './components/AllConnectionsPreview';
 
 const ARROW_KEY_MOVE_AMOUNT = 1;
 
@@ -70,69 +74,6 @@ export default function PuzzleConfigTool() {
     const containerRef = useRef<HTMLDivElement>(null);
     const previewRef = useRef<HTMLDivElement>(null);
 
-    // Calculate the total unscaled dimensions of the puzzle
-    const calculatePuzzleDimensions = useCallback((config: PuzzleConfig) => {
-        let maxRowWidth = 0;
-        let maxRowHeight = 0;
-        let totalHeight = 0;
-
-        // Calculate dimensions for each row
-        for (let row = 0; row < config.layout.rows; row++) {
-            let rowWidth = 0;
-            let rowHeight = 0;
-
-            // Calculate dimensions for each piece in the row
-            for (let col = 0; col < config.layout.cols; col++) {
-                const pieceIndex = row * config.layout.cols + col;
-                const piece = config.dimensions[pieceIndex];
-                if (piece) {
-                    rowWidth += piece.width + 20; // 20px padding
-                    rowHeight = Math.max(rowHeight, piece.height);
-                }
-            }
-
-            maxRowWidth = Math.max(maxRowWidth, rowWidth);
-            maxRowHeight = Math.max(maxRowHeight, rowHeight);
-            totalHeight += rowHeight + 20; // 20px padding
-        }
-
-        return {
-            width: maxRowWidth - 20, // Remove extra padding
-            height: totalHeight - 20 // Remove extra padding
-        };
-    }, []);
-
-    // Update scale factor when container size changes
-    const updateScaleFactor = useCallback(() => {
-        if (!containerRef.current || !puzzleConfigs[selectedPuzzleId]) return;
-
-        const container = containerRef.current;
-        const { width: puzzleWidth, height: puzzleHeight } = calculatePuzzleDimensions(puzzleConfigs[selectedPuzzleId]);
-        const containerWidth = container.clientWidth;
-        const containerHeight = container.clientHeight;
-
-        // Calculate scale factors for both dimensions
-        const widthScale = (containerWidth * 0.9) / puzzleWidth; // Leave 10% margin
-        const heightScale = (containerHeight * 0.9) / puzzleHeight; // Leave 10% margin
-
-        // Use the smaller scale to ensure puzzle fits both dimensions
-        const newScaleFactor = Math.min(widthScale, heightScale, 0.2); // Cap at 0.2 to prevent pieces from being too large
-        setScaleFactor(newScaleFactor);
-    }, [calculatePuzzleDimensions, puzzleConfigs, selectedPuzzleId]);
-
-    // Update scale factor when container size changes
-    useEffect(() => {
-        const observer = new ResizeObserver(() => {
-            updateScaleFactor();
-        });
-
-        if (containerRef.current) {
-            observer.observe(containerRef.current);
-        }
-
-        return () => observer.disconnect();
-    }, [updateScaleFactor]);
-
     // Load puzzle configurations dynamically
     useEffect(() => {
         async function loadPuzzleConfigs() {
@@ -155,31 +96,66 @@ export default function PuzzleConfigTool() {
         loadPuzzleConfigs();
     }, []);
 
+    const calculatePuzzleDimensions = useCallback((config: PuzzleConfig) => {
+        let maxRowWidth = 0;
+        let totalHeight = 0;
+        for (let row = 0; row < config.layout.rows; row++) {
+            let rowWidth = 0;
+            let rowHeight = 0;
+            for (let col = 0; col < config.layout.cols; col++) {
+                const pieceIndex = row * config.layout.cols + col;
+                const piece = config.dimensions[pieceIndex];
+                if (piece) {
+                    rowWidth += piece.width + 20;
+                    rowHeight = Math.max(rowHeight, piece.height);
+                }
+            }
+            maxRowWidth = Math.max(maxRowWidth, rowWidth);
+            totalHeight += rowHeight + 20;
+        }
+        return {
+            width: maxRowWidth - 20,
+            height: totalHeight - 20
+        };
+    }, []);
+
+    const updateScaleFactor = useCallback(() => {
+        if (!containerRef.current || !puzzleConfigs[selectedPuzzleId]) return;
+        const container = containerRef.current;
+        const { width: puzzleWidth, height: puzzleHeight } = calculatePuzzleDimensions(puzzleConfigs[selectedPuzzleId]);
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
+        const widthScale = (containerWidth * 0.9) / puzzleWidth;
+        const heightScale = (containerHeight * 0.9) / puzzleHeight;
+        const newScaleFactor = Math.min(widthScale, heightScale, 0.2);
+        setScaleFactor(newScaleFactor);
+    }, [calculatePuzzleDimensions, puzzleConfigs, selectedPuzzleId]);
+
+    useEffect(() => {
+        const observer = new ResizeObserver(() => {
+            updateScaleFactor();
+        });
+        if (containerRef.current) {
+            observer.observe(containerRef.current);
+        }
+        return () => observer.disconnect();
+    }, [updateScaleFactor]);
+
     const onDotClick = useCallback((pieceId: number, pointId: string) => {
         if (linkingPoint) {
-            // Cancel linking if the source point is clicked again
             if (linkingPoint.pieceId === pieceId && linkingPoint.pointId === pointId) {
                 setLinkingPoint(null);
                 setSelectedPoint({ pieceId, pointId });
                 return;
             }
-
-            // Create a deep copy of the config to ensure immutable updates
             const updatedConfig = JSON.parse(JSON.stringify(puzzleConfigs[selectedPuzzleId])) as PuzzleConfig;
-
-            // Find pieces and points from the deep copy
             const sourcePiece = updatedConfig.dimensions.find(p => p.id === linkingPoint.pieceId);
             const sourcePoint = sourcePiece?.connections.find(p => p.id === linkingPoint.pointId);
             const targetPiece = updatedConfig.dimensions.find(p => p.id === pieceId);
             const targetPoint = targetPiece?.connections.find(p => p.id === pointId);
-
             if (!sourcePiece || !sourcePoint || !targetPiece || !targetPoint) return;
-
-            // Apply the two-way link
             sourcePoint.connectsTo = { pieceId: targetPiece.id, pointId: targetPoint.id, sequence: 1 };
             targetPoint.connectsTo = { pieceId: sourcePiece.id, pointId: sourcePoint.id, sequence: 1 };
-
-            // Set the new state with the updated config
             setPuzzleConfigs(prevConfigs => ({
                 ...prevConfigs,
                 [selectedPuzzleId]: updatedConfig
@@ -197,13 +173,11 @@ export default function PuzzleConfigTool() {
         setSelectedPoint(null);
     }, [selectedPoint]);
 
-    const handlePieceClick = useCallback((e: React.MouseEvent, piece: any) => {
+    const handlePieceClick = useCallback((e: React.MouseEvent, piece: PieceDimensions) => {
         if (!addingPointType) return;
-
-        const rect = (e.target as HTMLElement).getBoundingClientRect();
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
         const x = (e.clientX - rect.left) / scaleFactor - piece.width / 2;
         const y = (e.clientY - rect.top) / scaleFactor - piece.height / 2;
-
         const newPoint: ConnectionPoint = {
             id: `${addingPointType}_${piece.id}_${piece.connections.length + 1}`,
             type: addingPointType,
@@ -211,50 +185,34 @@ export default function PuzzleConfigTool() {
             y: Math.round(y),
             connectsTo: { pieceId: 0, pointId: '', sequence: 1 }
         };
-
         const updatedConfig = { ...puzzleConfigs[selectedPuzzleId] };
         const pieceIndex = updatedConfig.dimensions.findIndex(p => p.id === piece.id);
         updatedConfig.dimensions[pieceIndex].connections.push(newPoint);
-
         setPuzzleConfigs({ ...puzzleConfigs, [selectedPuzzleId]: updatedConfig });
         setAddingPointType(null);
     }, [addingPointType, puzzleConfigs, selectedPuzzleId, scaleFactor]);
 
     const handleKeyDown = useCallback((e: KeyboardEvent) => {
         if (!selectedPoint) return;
-
         const updatedConfig = { ...puzzleConfigs[selectedPuzzleId] };
         const piece = updatedConfig.dimensions.find(p => p.id === selectedPoint.pieceId);
         if (!piece) return;
-
         const point = piece.connections.find(p => p.id === selectedPoint.pointId);
         if (!point) return;
-
         const moveAmount = e.repeat ? 5 : 1;
-
         switch (e.key) {
-            case 'ArrowLeft':
-                point.x -= moveAmount;
-                break;
-            case 'ArrowRight':
-                point.x += moveAmount;
-                break;
-            case 'ArrowUp':
-                point.y -= moveAmount;
-                break;
-            case 'ArrowDown':
-                point.y += moveAmount;
-                break;
+            case 'ArrowLeft': point.x -= moveAmount; break;
+            case 'ArrowRight': point.x += moveAmount; break;
+            case 'ArrowUp': point.y -= moveAmount; break;
+            case 'ArrowDown': point.y += moveAmount; break;
             case 'Delete':
             case 'Backspace':
                 const pieceIndex = updatedConfig.dimensions.findIndex(p => p.id === selectedPoint.pieceId);
                 updatedConfig.dimensions[pieceIndex].connections = piece.connections.filter(p => p.id !== selectedPoint.pointId);
                 setSelectedPoint(null);
                 break;
-            default:
-                return;
+            default: return;
         }
-
         setPuzzleConfigs({ ...puzzleConfigs, [selectedPuzzleId]: updatedConfig });
         e.preventDefault();
     }, [selectedPoint, puzzleConfigs, selectedPuzzleId]);
@@ -270,22 +228,13 @@ export default function PuzzleConfigTool() {
             setSaveError(null);
             const response = await fetch('/api/puzzle-config', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     puzzleId: selectedPuzzleId,
                     config: puzzleConfigs[selectedPuzzleId],
                 }),
             });
-
-            if (!response.ok) {
-                throw new Error('Failed to save configuration');
-            }
-
-            // No need to reload, the state is the source of truth.
-            // This also fixes a race condition where the file might not be updated on disk
-            // before the import runs, causing dots to disappear.
+            if (!response.ok) throw new Error('Failed to save configuration');
         } catch (error) {
             setSaveError(error instanceof Error ? error.message : 'Failed to save');
         } finally {
@@ -301,13 +250,10 @@ export default function PuzzleConfigTool() {
     ) => {
         const anchorPoint = anchorPiece.connections.find((p: ConnectionPoint) => p.id === connection.connectsTo.pointId);
         if (!anchorPoint) return null;
-
         const pieceCenter = { x: piece.width / 2, y: piece.height / 2 };
         const anchorCenter = { x: anchorPiece.width / 2, y: anchorPiece.height / 2 };
-
         const x = anchorPos.x + (anchorCenter.x + anchorPoint.x) - (pieceCenter.x + connection.x);
         const y = anchorPos.y + (anchorCenter.y + anchorPoint.y) - (pieceCenter.y + connection.y);
-
         return { x, y };
     }, []);
 
@@ -343,251 +289,55 @@ export default function PuzzleConfigTool() {
     const pieces = [...selectedPuzzle.dimensions].sort((a, b) => a.id - b.id);
 
     return (
-        <div className="h-screen bg-gray-100 p-4 flex flex-col gap-4">
-            {/* Top section - Configurator and Config */}
-            <div className="flex gap-4 h-[60vh]">
-                {/* Left side - Puzzle pieces */}
-                <div ref={containerRef} className="w-2/3 bg-white rounded-xl shadow-lg p-4 overflow-auto">
-                    <div className="sticky top-[-1rem] bg-white pt-4 pb-4 -mt-4 mx-[-1rem] px-4 z-10 flex justify-end items-center mb-4 border-b">
-                        <div className="flex gap-4">
-                            <select
-                                value={selectedPuzzleId}
-                                onChange={(e) => setSelectedPuzzleId(parseInt(e.target.value))}
-                                className="px-4 py-2 bg-white rounded-lg border border-gray-300 text-black"
-                            >
-                                <option value="1">Puzzle 1 (2x4)</option>
-                                <option value="2">Puzzle 2 (4x4)</option>
-                            </select>
-                            <button
-                                onClick={() => setShowIds(!showIds)}
-                                className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                            >
-                                {showIds ? 'Hide IDs' : 'Show IDs'}
-                            </button>
-                            <button
-                                onClick={handleStartLink}
-                                disabled={!selectedPoint || !!linkingPoint}
-                                className="px-4 py-2 rounded-lg transition-colors bg-purple-600 text-white hover:bg-purple-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                            >
-                                Link Point
-                            </button>
-                            <button
-                                onClick={() => setAddingPointType('indent')}
-                                className={`px-4 py-2 rounded-lg transition-colors ${addingPointType === 'indent' ? 'bg-blue-500 text-white' : 'bg-white border border-gray-300 text-black'}`}
-                            >
-                                Add Indent
-                            </button>
-                            <button
-                                onClick={() => setAddingPointType('outdent')}
-                                className={`px-4 py-2 rounded-lg transition-colors ${addingPointType === 'outdent' ? 'bg-red-500 text-white' : 'bg-white border border-gray-300 text-black'}`}
-                            >
-                                Add Outdent
-                            </button>
-                            <button
-                                onClick={handleSave}
-                                disabled={isSaving}
-                                className={`px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            >
-                                {isSaving ? 'Saving...' : 'Save'}
-                            </button>
-                        </div>
+        <div className="h-screen bg-gray-100 flex flex-col">
+            <Toolbar
+                selectedPuzzleId={selectedPuzzleId}
+                onPuzzleChange={setSelectedPuzzleId}
+                showIds={showIds}
+                onToggleShowIds={() => setShowIds(!showIds)}
+                onStartLink={handleStartLink}
+                selectedPoint={selectedPoint}
+                linkingPoint={linkingPoint}
+                onSetAddingPointType={setAddingPointType}
+                addingPointType={addingPointType}
+                onSave={handleSave}
+                isSaving={isSaving}
+            />
+            <main className="flex-1 overflow-hidden p-4 min-h-[400px]">
+                <div className="h-full grid grid-cols-3 gap-4">
+                    <div ref={containerRef} className="col-span-2 bg-white rounded-xl shadow-lg p-4 overflow-auto">
+                        <PuzzleGrid
+                            pieces={pieces}
+                            layout={selectedPuzzle.layout}
+                            scaleFactor={scaleFactor}
+                            showIds={showIds}
+                            selectedPuzzleId={selectedPuzzleId}
+                            selectedPoint={selectedPoint}
+                            linkingPoint={linkingPoint}
+                            onPieceClick={handlePieceClick}
+                            onDotClick={onDotClick}
+                        />
                     </div>
-
-                    <div className="grid gap-8" style={{
-                        display: 'grid',
-                        gridTemplateColumns: `repeat(${selectedPuzzle.layout.cols}, min-content)`,
-                        justifyContent: 'space-between',
-                        alignItems: 'start'
-                    }}>
-                        {pieces.map((piece) => (
-                            <div
-                                key={piece.id}
-                                className="relative bg-gray-100 rounded-lg p-2 cursor-pointer"
-                                onClick={(e) => handlePieceClick(e, piece)}
-                                style={{
-                                    width: piece.width * scaleFactor,
-                                    height: piece.height * scaleFactor,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}
-                            >
-                                {renderPieceId(piece.id, showIds)}
-                                <img
-                                    src={`/assets/puzzles/puzzle_${selectedPuzzleId}/${piece.id}.png`}
-                                    alt={`Piece ${piece.id}`}
-                                    className="w-full h-full object-contain"
-                                    style={{
-                                        maxWidth: '100%',
-                                        maxHeight: '100%'
-                                    }}
-                                />
-                                {piece.connections.map((point) =>
-                                    renderDot(
-                                        point,
-                                        piece,
-                                        showIds,
-                                        selectedPoint?.pieceId === piece.id && selectedPoint?.pointId === point.id,
-                                        linkingPoint?.pieceId === piece.id && linkingPoint?.pointId === point.id,
-                                        onDotClick,
-                                        scaleFactor
-                                    )
-                                )}
-                            </div>
-                        ))}
+                    <div className="col-span-1 overflow-y-auto">
+                        <ConnectionPreview
+                            selectedPoint={selectedPoint}
+                            linkingPoint={linkingPoint}
+                            addingPointType={addingPointType}
+                            selectedPuzzle={selectedPuzzle}
+                            selectedPuzzleId={selectedPuzzleId}
+                            positionPieceRelativeTo={positionPieceRelativeTo}
+                        />
                     </div>
                 </div>
-
-                {/* Right side - Selected Connection Preview */}
-                <div className="w-1/3 bg-white rounded-xl shadow-lg p-4 flex flex-col gap-4">
-                    <div className="flex justify-between items-center border-b pb-2">
-                        <h2 className="text-xl font-bold text-black">Connection Preview</h2>
-                        <div className="text-sm text-gray-500">
-                            {linkingPoint
-                                ? `LINKING: From piece ${linkingPoint.pieceId} (${linkingPoint.pointId}). Click target.`
-                                : selectedPoint
-                                    ? `Editing: Piece ${selectedPoint.pieceId}, Point ${selectedPoint.pointId}`
-                                    : addingPointType
-                                        ? `Adding new ${addingPointType} point`
-                                        : 'Select a point'}
-                        </div>
-                    </div>
-                    <div className="relative bg-gray-50 rounded-lg flex-1 flex items-center justify-center p-4 min-h-[300px]">
-                        {(() => {
-                            if (!selectedPoint) {
-                                return <div className="flex items-center justify-center h-full text-gray-500">Select a connection point to see a preview.</div>;
-                            }
-
-                            const piece1 = selectedPuzzle.dimensions.find(p => p.id === selectedPoint.pieceId);
-                            if (!piece1) return null;
-
-                            const connection1 = piece1.connections.find(c => c.id === selectedPoint.pointId);
-                            if (!connection1 || connection1.connectsTo.pieceId === 0) {
-                                return <div className="flex items-center justify-center h-full text-gray-500">This point is not connected.</div>;
-                            }
-
-                            const piece2 = selectedPuzzle.dimensions.find(p => p.id === connection1.connectsTo.pieceId);
-                            if (!piece2) return null;
-
-                            const connection2 = piece2.connections.find(c => c.connectsTo.pieceId === piece1.id && c.connectsTo.pointId === connection1.id);
-                            if (!connection2) {
-                                return <div className="flex items-center justify-center h-full text-gray-500">One-way connection. Cannot preview.</div>;
-                            }
-
-                            const pos1 = { x: 0, y: 0 };
-                            const pos2 = positionPieceRelativeTo(piece2, connection2, piece1, pos1);
-                            if (!pos2) return null;
-
-                            const allX = [pos1.x, pos2.x, pos1.x + piece1.width, pos2.x + piece2.width];
-                            const allY = [pos1.y, pos2.y, pos1.y + piece1.height, pos2.y + piece2.height];
-                            const minX = Math.min(...allX);
-                            const minY = Math.min(...allY);
-                            const maxX = Math.max(...allX);
-                            const maxY = Math.max(...allY);
-
-                            const containerWidth = maxX - minX;
-                            const containerHeight = maxY - minY;
-                            const offsetX = -minX;
-                            const offsetY = -minY;
-
-                            const previewWidth = 300;
-                            const previewHeight = 300;
-
-                            let previewScale = 1;
-                            if (containerWidth > 0 && containerHeight > 0) {
-                                const scaleX = previewWidth / containerWidth;
-                                const scaleY = previewHeight / containerHeight;
-                                previewScale = Math.min(scaleX, scaleY) * 0.8; // Use 80% of space
-                            }
-
-                            return (
-                                <div key={`${piece1.id}-${piece2.id}`} className="relative" style={{ width: containerWidth * previewScale, height: containerHeight * previewScale }}>
-                                    <div className="absolute" style={{
-                                        left: (pos1.x + offsetX) * previewScale,
-                                        top: (pos1.y + offsetY) * previewScale,
-                                        width: piece1.width * previewScale,
-                                        height: piece1.height * previewScale
-                                    }}>
-                                        <img src={`/assets/puzzles/puzzle_${selectedPuzzleId}/${piece1.id}.png`} alt={`Piece ${piece1.id}`} className="w-full h-full" />
-                                    </div>
-                                    <div className="absolute" style={{
-                                        left: (pos2.x + offsetX) * previewScale,
-                                        top: (pos2.y + offsetY) * previewScale,
-                                        width: piece2.width * previewScale,
-                                        height: piece2.height * previewScale
-                                    }}>
-                                        <img src={`/assets/puzzles/puzzle_${selectedPuzzleId}/${piece2.id}.png`} alt={`Piece ${piece2.id}`} className="w-full h-full" />
-                                    </div>
-                                </div>
-                            );
-                        })()}
-                    </div>
-                </div>
-            </div>
-
-            {/* Bottom section - Preview */}
-            <div className="bg-white rounded-xl shadow-lg p-4 flex-1 flex flex-col">
-                <div className="flex justify-between items-center mb-4 border-b pb-2">
-                    <h2 className="text-xl font-bold text-black">Connection Previews</h2>
-                    <div className="text-sm text-gray-500">
-                        Showing {connectionPairs.length} unique two-way connections
-                    </div>
-                </div>
-                <div
-                    ref={previewRef}
-                    className="relative w-full flex-1 overflow-y-auto"
-                >
-                    <div className="flex flex-wrap gap-4 p-4">
-                        {connectionPairs.map(([id1, id2]) => {
-                            const piece1 = pieces.find(p => p.id === id1);
-                            const piece2 = pieces.find(p => p.id === id2);
-
-                            if (!piece1 || !piece2) return null;
-
-                            const connection2to1 = piece2.connections.find(c => c.connectsTo.pieceId === piece1.id);
-                            if (!connection2to1) return null;
-
-                            const pos1 = { x: 0, y: 0 };
-                            const pos2 = positionPieceRelativeTo(piece2, connection2to1, piece1, pos1);
-                            if (!pos2) return null;
-
-                            const allX = [pos1.x, pos2.x, pos1.x + piece1.width, pos2.x + piece2.width];
-                            const allY = [pos1.y, pos2.y, pos1.y + piece1.height, pos2.y + piece2.height];
-                            const minX = Math.min(...allX);
-                            const minY = Math.min(...allY);
-                            const maxX = Math.max(...allX);
-                            const maxY = Math.max(...allY);
-
-                            const containerWidth = maxX - minX;
-                            const containerHeight = maxY - minY;
-                            const offsetX = -minX;
-                            const offsetY = -minY;
-                            const previewScale = 0.15;
-
-                            return (
-                                <div key={`${id1}-${id2}`} className="border rounded-lg p-2 bg-gray-50 relative flex-shrink-0" style={{ width: containerWidth * previewScale, height: containerHeight * previewScale }}>
-                                    <div className="absolute" style={{
-                                        left: (pos1.x + offsetX) * previewScale,
-                                        top: (pos1.y + offsetY) * previewScale,
-                                        width: piece1.width * previewScale,
-                                        height: piece1.height * previewScale
-                                    }}>
-                                        <img src={`/assets/puzzles/puzzle_${selectedPuzzleId}/${piece1.id}.png`} alt={`Piece ${piece1.id}`} className="w-full h-full" />
-                                    </div>
-                                    <div className="absolute" style={{
-                                        left: (pos2.x + offsetX) * previewScale,
-                                        top: (pos2.y + offsetY) * previewScale,
-                                        width: piece2.width * previewScale,
-                                        height: piece2.height * previewScale
-                                    }}>
-                                        <img src={`/assets/puzzles/puzzle_${selectedPuzzleId}/${piece2.id}.png`} alt={`Piece ${piece2.id}`} className="w-full h-full" />
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
+            </main>
+            <footer className="p-4">
+                <AllConnectionsPreview
+                    pieces={pieces}
+                    connectionPairs={connectionPairs}
+                    selectedPuzzleId={selectedPuzzleId}
+                    positionPieceRelativeTo={positionPieceRelativeTo}
+                />
+            </footer>
         </div>
     );
 } 
