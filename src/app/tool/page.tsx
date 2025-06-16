@@ -311,7 +311,7 @@ ${piece.connections.map(conn => `        {
     return (
         <div className="min-h-screen bg-gray-100 p-4 flex gap-4">
             {/* Left side - Puzzle pieces */}
-            <div ref={containerRef} className="w-1/2 bg-white rounded-xl shadow-lg p-4 overflow-auto">
+            <div ref={containerRef} className="w-2/3 bg-white rounded-xl shadow-lg p-4 overflow-auto">
                 <div className="flex justify-between items-center mb-8">
                     <h1 className="text-2xl font-bold text-black">Puzzle Config Tool: {selectedPuzzle.name}</h1>
                     <div className="flex gap-4">
@@ -351,7 +351,12 @@ ${piece.connections.map(conn => `        {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid gap-8" style={{
+                    display: 'grid',
+                    gridTemplateColumns: `repeat(${selectedPuzzle.layout.cols}, min-content)`,
+                    justifyContent: 'space-between',
+                    alignItems: 'start'
+                }}>
                     {pieces.map((piece) => (
                         <div
                             key={piece.id}
@@ -360,6 +365,9 @@ ${piece.connections.map(conn => `        {
                             style={{
                                 width: piece.width * scaleFactor,
                                 height: piece.height * scaleFactor,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
                             }}
                         >
                             {renderPieceId(piece.id, showIds)}
@@ -367,6 +375,10 @@ ${piece.connections.map(conn => `        {
                                 src={`/assets/puzzles/puzzle_${selectedPuzzleId}/${piece.id}.png`}
                                 alt={`Piece ${piece.id}`}
                                 className="w-full h-full object-contain"
+                                style={{
+                                    maxWidth: '100%',
+                                    maxHeight: '100%'
+                                }}
                             />
                             {piece.connections.map((point) =>
                                 renderDot(
@@ -384,7 +396,7 @@ ${piece.connections.map(conn => `        {
             </div>
 
             {/* Right side - Config file */}
-            <div className="w-1/2 bg-white rounded-xl shadow-lg p-4 overflow-auto">
+            <div className="w-1/3 bg-white rounded-xl shadow-lg p-4 overflow-auto">
                 <div className="flex justify-between items-center mb-4">
                     <div className="flex items-center gap-4">
                         <h2 className="text-xl font-bold text-black">puzzle{selectedPuzzleId}Config.ts</h2>
