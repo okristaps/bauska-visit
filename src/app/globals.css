@@ -13,4 +13,9 @@
     position: fixed;
     width: 100vw;
   }
+
+  .home-no-scroll {
+    overflow: hidden !important;
+    height: 100vh;
+  }
 }
