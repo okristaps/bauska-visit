@@ -30,7 +30,6 @@ function renderPieceId(id: number, showIds: boolean) {
 function renderDot(
     point: ConnectionPoint,
     piece: PieceDimensions,
-    showIds: boolean,
     isSelectedForEdit: boolean,
     isLinkingSource: boolean,
     onPointClick: (pieceId: number, pointId: string) => void,
@@ -104,7 +103,6 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({
                         renderDot(
                             point,
                             piece,
-                            showIds,
                             selectedPoint?.pieceId === piece.id && selectedPoint?.pointId === point.id,
                             linkingPoint?.pieceId === piece.id && linkingPoint?.pointId === point.id,
                             onDotClick,

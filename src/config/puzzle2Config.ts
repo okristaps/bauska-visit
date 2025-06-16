@@ -34,8 +34,8 @@ export const puzzle2Config: PuzzleConfig = {
         {
           "id": "outdent_1_2",
           "type": "outdent",
-          "x": -49,
-          "y": 431,
+          "x": -48,
+          "y": 428,
           "connectsTo": {
             "pieceId": 5,
             "pointId": "indent_5_1",
@@ -58,7 +58,7 @@ export const puzzle2Config: PuzzleConfig = {
         {
           "id": "indent_2_1",
           "type": "indent",
-          "x": -227,
+          "x": -225,
           "y": 35,
           "connectsTo": {
             "pieceId": 1,
@@ -69,8 +69,8 @@ export const puzzle2Config: PuzzleConfig = {
         {
           "id": "indent_2_2",
           "type": "indent",
-          "x": 168,
-          "y": -3,
+          "x": 169,
+          "y": -4,
           "connectsTo": {
             "pieceId": 3,
             "pointId": "outdent_3_1",
@@ -104,7 +104,7 @@ export const puzzle2Config: PuzzleConfig = {
         {
           "id": "outdent_3_1",
           "type": "outdent",
-          "x": -499,
+          "x": -498,
           "y": -7,
           "connectsTo": {
             "pieceId": 2,
@@ -196,7 +196,7 @@ export const puzzle2Config: PuzzleConfig = {
         {
           "id": "outdent_5_2",
           "type": "outdent",
-          "x": 392,
+          "x": 394,
           "y": 14,
           "connectsTo": {
             "pieceId": 6,
