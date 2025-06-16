@@ -23,13 +23,17 @@ function renderDot(
     point: ConnectionPoint,
     piece: any,
     showIds: boolean,
-    isSelected: boolean,
+    isSelectedForEdit: boolean,
+    isLinkingSource: boolean,
     onPointClick: (pieceId: number, pointId: string) => void,
     scaleFactor: number
 ) {
     const isIndent = point.type === 'indent';
-    const dotColor = isSelected ? 'bg-yellow-400' : (isIndent ? 'bg-blue-500' : 'bg-red-500');
-    const dotSize = isSelected ? '12px' : '8px';
+    let dotColor = isIndent ? 'bg-blue-500' : 'bg-red-500';
+    if (isSelectedForEdit) dotColor = 'bg-yellow-400';
+    if (isLinkingSource) dotColor = 'bg-green-500 animate-pulse';
+
+    const dotSize = isSelectedForEdit || isLinkingSource ? '12px' : '8px';
 
     const centerX = piece.width * scaleFactor / 2;
     const centerY = piece.height * scaleFactor / 2;
@@ -43,10 +47,10 @@ function renderDot(
                 height: dotSize,
                 left: centerX + point.x * scaleFactor - parseInt(dotSize) / 2,
                 top: centerY + point.y * scaleFactor - parseInt(dotSize) / 2,
-                border: isSelected ? '2px solid black' : 'none',
+                border: isSelectedForEdit ? '2px solid black' : 'none',
             }}
             onClick={() => onPointClick(piece.id, point.id)}
-            title={`${point.id} (${point.x}, ${point.y}) -> piece_${point.connectsTo?.pieceId || 'unconnected'}`}
+            title={`${point.id} (${point.x}, ${point.y}) -> piece_${point.connectsTo?.pieceId || 'unconnected'}${point.connectsTo.pointId ? ` (${point.connectsTo.pointId})` : ''}`}
         />
     );
 }
@@ -57,6 +61,7 @@ export default function PuzzleConfigTool() {
     const [selectedPuzzleId, setSelectedPuzzleId] = useState<number>(1);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedPoint, setSelectedPoint] = useState<SelectedPoint | null>(null);
+    const [linkingPoint, setLinkingPoint] = useState<SelectedPoint | null>(null);
     const [addingPointType, setAddingPointType] = useState<'indent' | 'outdent' | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
@@ -150,10 +155,41 @@ export default function PuzzleConfigTool() {
         loadPuzzleConfigs();
     }, []);
 
-    const handlePointClick = useCallback((pieceId: number, pointId: string) => {
-        setSelectedPoint({ pieceId, pointId });
-        setAddingPointType(null);
-    }, []);
+    const onDotClick = useCallback((pieceId: number, pointId: string) => {
+        if (linkingPoint) {
+            if (linkingPoint.pieceId === pieceId && linkingPoint.pointId === pointId) {
+                setLinkingPoint(null);
+                setSelectedPoint({ pieceId, pointId });
+                return;
+            }
+
+            const updatedConfig = { ...puzzleConfigs[selectedPuzzleId] };
+            const sourcePiece = updatedConfig.dimensions.find(p => p.id === linkingPoint.pieceId);
+            if (!sourcePiece) return;
+            const sourcePoint = sourcePiece.connections.find(p => p.id === linkingPoint.pointId);
+            if (!sourcePoint) return;
+
+            const targetPiece = updatedConfig.dimensions.find(p => p.id === pieceId);
+            if (!targetPiece) return;
+            const targetPoint = targetPiece.connections.find(p => p.id === pointId);
+            if (!targetPoint) return;
+
+            sourcePoint.connectsTo = { pieceId: targetPiece.id, pointId: targetPoint.id, sequence: 1 };
+            targetPoint.connectsTo = { pieceId: sourcePiece.id, pointId: sourcePoint.id, sequence: 1 };
+
+            setPuzzleConfigs({ ...puzzleConfigs, [selectedPuzzleId]: updatedConfig });
+            setLinkingPoint(null);
+        } else {
+            setSelectedPoint({ pieceId, pointId });
+            setAddingPointType(null);
+        }
+    }, [linkingPoint, puzzleConfigs, selectedPuzzleId]);
+
+    const handleStartLink = useCallback(() => {
+        if (!selectedPoint) return;
+        setLinkingPoint(selectedPoint);
+        setSelectedPoint(null);
+    }, [selectedPoint]);
 
     const handlePieceClick = useCallback((e: React.MouseEvent, piece: any) => {
         if (!addingPointType) return;
@@ -188,18 +224,20 @@ export default function PuzzleConfigTool() {
         const point = piece.connections.find(p => p.id === selectedPoint.pointId);
         if (!point) return;
 
+        const moveAmount = e.repeat ? 5 : 1;
+
         switch (e.key) {
             case 'ArrowLeft':
-                point.x -= ARROW_KEY_MOVE_AMOUNT;
+                point.x -= moveAmount;
                 break;
             case 'ArrowRight':
-                point.x += ARROW_KEY_MOVE_AMOUNT;
+                point.x += moveAmount;
                 break;
             case 'ArrowUp':
-                point.y -= ARROW_KEY_MOVE_AMOUNT;
+                point.y -= moveAmount;
                 break;
             case 'ArrowDown':
-                point.y += ARROW_KEY_MOVE_AMOUNT;
+                point.y += moveAmount;
                 break;
             case 'Delete':
             case 'Backspace':
@@ -239,15 +277,9 @@ export default function PuzzleConfigTool() {
                 throw new Error('Failed to save configuration');
             }
 
-            // Reload the config to ensure we have the latest version
-            const [puzzle1Module, puzzle2Module] = await Promise.all([
-                import('@/config/puzzle1Config?t=' + Date.now()),
-                import('@/config/puzzle2Config?t=' + Date.now()),
-            ]);
-            setPuzzleConfigs({
-                1: puzzle1Module.puzzle1Config,
-                2: puzzle2Module.puzzle2Config
-            });
+            // No need to reload, the state is the source of truth.
+            // This also fixes a race condition where the file might not be updated on disk
+            // before the import runs, causing dots to disappear.
         } catch (error) {
             setSaveError(error instanceof Error ? error.message : 'Failed to save');
         } finally {
@@ -370,13 +402,12 @@ ${piece.connections.map(conn => `        {
     const pieces = [...selectedPuzzle.dimensions].sort((a, b) => a.id - b.id);
 
     return (
-        <div className="min-h-screen bg-gray-100 p-4 flex flex-col gap-4">
+        <div className="h-screen bg-gray-100 p-4 flex flex-col gap-4">
             {/* Top section - Configurator and Config */}
             <div className="flex gap-4 h-[60vh]">
                 {/* Left side - Puzzle pieces */}
                 <div ref={containerRef} className="w-2/3 bg-white rounded-xl shadow-lg p-4 overflow-auto">
-                    <div className="flex justify-between items-center mb-8">
-                        <h1 className="text-2xl font-bold text-black">Puzzle Config Tool: {selectedPuzzle.name}</h1>
+                    <div className="sticky top-[-1rem] bg-white pt-4 pb-4 -mt-4 mx-[-1rem] px-4 z-10 flex justify-end items-center mb-4 border-b">
                         <div className="flex gap-4">
                             <select
                                 value={selectedPuzzleId}
@@ -391,6 +422,13 @@ ${piece.connections.map(conn => `        {
                                 className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
                             >
                                 {showIds ? 'Hide IDs' : 'Show IDs'}
+                            </button>
+                            <button
+                                onClick={handleStartLink}
+                                disabled={!selectedPoint || !!linkingPoint}
+                                className="px-4 py-2 rounded-lg transition-colors bg-purple-600 text-white hover:bg-purple-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                            >
+                                Link Point
                             </button>
                             <button
                                 onClick={() => setAddingPointType('indent')}
@@ -449,7 +487,8 @@ ${piece.connections.map(conn => `        {
                                         piece,
                                         showIds,
                                         selectedPoint?.pieceId === piece.id && selectedPoint?.pointId === point.id,
-                                        handlePointClick,
+                                        linkingPoint?.pieceId === piece.id && linkingPoint?.pointId === point.id,
+                                        onDotClick,
                                         scaleFactor
                                     )
                                 )}
@@ -474,11 +513,13 @@ ${piece.connections.map(conn => `        {
                             </button>
                         </div>
                         <div className="text-sm text-gray-500">
-                            {selectedPoint
-                                ? `Editing: Piece ${selectedPoint.pieceId}, Point ${selectedPoint.pointId}`
-                                : addingPointType
-                                    ? `Adding new ${addingPointType} point`
-                                    : 'Viewing'}
+                            {linkingPoint
+                                ? `LINKING: From piece ${linkingPoint.pieceId} (${linkingPoint.pointId}). Click target.`
+                                : selectedPoint
+                                    ? `Editing: Piece ${selectedPoint.pieceId}, Point ${selectedPoint.pointId}`
+                                    : addingPointType
+                                        ? `Adding new ${addingPointType} point`
+                                        : 'Viewing'}
                         </div>
                     </div>
                     <pre className="text-sm font-mono bg-gray-100 p-4 rounded whitespace-pre overflow-auto text-black flex-1">
@@ -497,62 +538,67 @@ ${piece.connections.map(conn => `        {
                 </div>
                 <div
                     ref={previewRef}
-                    className="relative w-full h-full flex items-center justify-center overflow-auto"
-                    style={{ minHeight: '400px' }}
+                    className="relative w-full h-full flex items-start justify-start overflow-auto"
                 >
-                    <div className="relative">
-                        {(() => {
-                            const positions = calculatePiecePositions(pieces);
-                            // Find bounds to center the preview
-                            let minX = 0, minY = 0, maxX = 0, maxY = 0;
-                            positions.forEach((pos, id) => {
-                                const piece = pieces.find(p => p.id === id);
-                                if (!piece) return;
-                                minX = Math.min(minX, pos.x);
-                                minY = Math.min(minY, pos.y);
-                                maxX = Math.max(maxX, pos.x + piece.width);
-                                maxY = Math.max(maxY, pos.y + piece.height);
-                            });
+                    {(() => {
+                        const positions = calculatePiecePositions(pieces);
+                        if (positions.size === 0) return null;
 
-                            // Offset to center and ensure no negative positions
-                            const offsetX = -minX;
-                            const offsetY = -minY;
+                        // Find bounds to center the preview
+                        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                        positions.forEach((pos, id) => {
+                            const piece = pieces.find(p => p.id === id);
+                            if (!piece) return;
+                            minX = Math.min(minX, pos.x);
+                            minY = Math.min(minY, pos.y);
+                            maxX = Math.max(maxX, pos.x + piece.width);
+                            maxY = Math.max(maxY, pos.y + piece.height);
+                        });
 
-                            return pieces.map((piece) => {
-                                const pos = positions.get(piece.id);
-                                if (!pos) return null;
+                        // Offset to center and ensure no negative positions
+                        const offsetX = -minX;
+                        const offsetY = -minY;
+                        const puzzleWidth = (maxX - minX) * scaleFactor;
+                        const puzzleHeight = (maxY - minY) * scaleFactor;
 
-                                return (
-                                    <div
-                                        key={piece.id}
-                                        className="absolute"
-                                        style={{
-                                            left: (pos.x + offsetX) * scaleFactor,
-                                            top: (pos.y + offsetY) * scaleFactor,
-                                            width: piece.width * scaleFactor,
-                                            height: piece.height * scaleFactor,
-                                        }}
-                                    >
-                                        <img
-                                            src={`/assets/puzzles/puzzle_${selectedPuzzleId}/${piece.id}.png`}
-                                            alt={`Piece ${piece.id}`}
-                                            className="w-full h-full object-contain"
-                                        />
-                                        {piece.connections.map((point) => (
-                                            <div
-                                                key={point.id}
-                                                className={`absolute w-2 h-2 rounded-full ${point.type === 'indent' ? 'bg-blue-500' : 'bg-red-500'}`}
-                                                style={{
-                                                    left: (piece.width / 2 + point.x) * scaleFactor - 4,
-                                                    top: (piece.height / 2 + point.y) * scaleFactor - 4,
-                                                }}
+                        return (
+                            <div className="relative" style={{ width: puzzleWidth, height: puzzleHeight }}>
+                                {pieces.map((piece) => {
+                                    const pos = positions.get(piece.id);
+                                    if (!pos) return null;
+
+                                    return (
+                                        <div
+                                            key={piece.id}
+                                            className="absolute"
+                                            style={{
+                                                left: (pos.x + offsetX) * scaleFactor,
+                                                top: (pos.y + offsetY) * scaleFactor,
+                                                width: piece.width * scaleFactor,
+                                                height: piece.height * scaleFactor,
+                                            }}
+                                        >
+                                            <img
+                                                src={`/assets/puzzles/puzzle_${selectedPuzzleId}/${piece.id}.png`}
+                                                alt={`Piece ${piece.id}`}
+                                                className="w-full h-full object-contain"
                                             />
-                                        ))}
-                                    </div>
-                                );
-                            });
-                        })()}
-                    </div>
+                                            {piece.connections.map((point) => (
+                                                <div
+                                                    key={point.id}
+                                                    className={`absolute w-2 h-2 rounded-full ${point.type === 'indent' ? 'bg-blue-500' : 'bg-red-500'}`}
+                                                    style={{
+                                                        left: (piece.width / 2 + point.x) * scaleFactor - 4,
+                                                        top: (piece.height / 2 + point.y) * scaleFactor - 4,
+                                                    }}
+                                                />
+                                            ))}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        );
+                    })()}
                 </div>
             </div>
         </div>

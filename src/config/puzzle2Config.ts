@@ -1,5 +1,4 @@
-// Auto-generated puzzle configuration
-import { PuzzleConfig } from "@/types";
+import { PuzzleConfig } from "../types";
 
 export const puzzle2Config: PuzzleConfig = {
   "id": 2,
@@ -20,7 +19,19 @@ export const puzzle2Config: PuzzleConfig = {
         "width": 936,
         "height": 956
       },
-      "connections": []
+      "connections": [
+        {
+          "id": "indent_1_1",
+          "type": "indent",
+          "x": 303,
+          "y": -36,
+          "connectsTo": {
+            "pieceId": 2,
+            "pointId": "outdent_2_1",
+            "sequence": 1
+          }
+        }
+      ]
     },
     {
       "id": 2,
@@ -32,7 +43,19 @@ export const puzzle2Config: PuzzleConfig = {
         "width": 792,
         "height": 770
       },
-      "connections": []
+      "connections": [
+        {
+          "id": "outdent_2_1",
+          "type": "outdent",
+          "x": -342,
+          "y": 54,
+          "connectsTo": {
+            "pieceId": 1,
+            "pointId": "indent_1_1",
+            "sequence": 1
+          }
+        }
+      ]
     },
     {
       "id": 3,

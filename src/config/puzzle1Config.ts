@@ -21,24 +21,24 @@ export const puzzle1Config: PuzzleConfig = {
       },
       "connections": [
         {
-          "id": "outdent_right_p1",
-          "x": 560,
-          "y": -120,
+          "id": "outdent_1_1",
           "type": "outdent",
+          "x": 603,
+          "y": -121,
           "connectsTo": {
             "pieceId": 2,
-            "pointId": "indent_left_p2",
+            "pointId": "indent_2_1",
             "sequence": 1
           }
         },
         {
-          "id": "outdent_bottom_p1",
-          "x": -67,
-          "y": 534,
+          "id": "outdent_1_2",
           "type": "outdent",
+          "x": -66,
+          "y": 558,
           "connectsTo": {
             "pieceId": 5,
-            "pointId": "indent_top_p5",
+            "pointId": "indent_5_1",
             "sequence": 1
           }
         }
@@ -56,35 +56,35 @@ export const puzzle1Config: PuzzleConfig = {
       },
       "connections": [
         {
-          "id": "indent_left_p2",
-          "x": -320,
-          "y": 0,
+          "id": "indent_2_1",
           "type": "indent",
+          "x": -275,
+          "y": -3,
           "connectsTo": {
             "pieceId": 1,
-            "pointId": "outdent_right_p1",
+            "pointId": "outdent_1_1",
             "sequence": 1
           }
         },
         {
-          "id": "indent_bottom_p2",
-          "x": 0,
-          "y": 300,
+          "id": "indent_2_2",
           "type": "indent",
+          "x": -20,
+          "y": 258,
           "connectsTo": {
             "pieceId": 6,
-            "pointId": "outdent_top_p6",
+            "pointId": "outdent_6_1",
             "sequence": 1
           }
         },
         {
-          "id": "indent_right_p2",
-          "x": 310,
-          "y": 5,
-          "type": "indent",
+          "id": "outdent_2_3",
+          "type": "outdent",
+          "x": 261,
+          "y": -5,
           "connectsTo": {
             "pieceId": 3,
-            "pointId": "outdent_left_p3",
+            "pointId": "outdent_3_1",
             "sequence": 1
           }
         }
@@ -102,35 +102,35 @@ export const puzzle1Config: PuzzleConfig = {
       },
       "connections": [
         {
-          "id": "outdent_left_p3",
-          "x": -580,
-          "y": -20,
+          "id": "outdent_3_1",
           "type": "outdent",
+          "x": -626,
+          "y": -16,
           "connectsTo": {
-            "pieceId": 7,
-            "pointId": "indent_right_p2",
+            "pieceId": 2,
+            "pointId": "outdent_2_3",
             "sequence": 1
           }
         },
         {
-          "id": "indent_right_p3",
-          "x": 420,
-          "y": -30,
+          "id": "indent_3_2",
           "type": "indent",
+          "x": 124,
+          "y": 261,
+          "connectsTo": {
+            "pieceId": 7,
+            "pointId": "outdent_7_1",
+            "sequence": 1
+          }
+        },
+        {
+          "id": "indent_3_3",
+          "type": "indent",
+          "x": 384,
+          "y": -60,
           "connectsTo": {
             "pieceId": 4,
-            "pointId": "outdent_left_p4",
-            "sequence": 1
-          }
-        },
-        {
-          "id": "indent_bottom_p3",
-          "x": 120,
-          "y": 320,
-          "type": "indent",
-          "connectsTo": {
-            "pieceId": 7,
-            "pointId": "outdent_top_p7",
+            "pointId": "outdent_4_1",
             "sequence": 1
           }
         }
@@ -148,24 +148,24 @@ export const puzzle1Config: PuzzleConfig = {
       },
       "connections": [
         {
-          "id": "indent_bottom_p4",
-          "x": 145,
-          "y": 265,
-          "type": "indent",
+          "id": "outdent_4_1",
+          "type": "outdent",
+          "x": -595,
+          "y": -39,
           "connectsTo": {
-            "pieceId": 8,
-            "pointId": "outdent_top_p8",
+            "pieceId": 3,
+            "pointId": "indent_3_3",
             "sequence": 1
           }
         },
         {
-          "id": "outdent_left_p4",
-          "x": -580,
-          "y": -20,
-          "type": "outdent",
+          "id": "indent_4_2",
+          "type": "indent",
+          "x": 112,
+          "y": 209,
           "connectsTo": {
-            "pieceId": 3,
-            "pointId": "indent_right_p3",
+            "pieceId": 8,
+            "pointId": "outdent_8_2",
             "sequence": 1
           }
         }
@@ -173,34 +173,34 @@ export const puzzle1Config: PuzzleConfig = {
     },
     {
       "id": 5,
-      "width": 1246,
-      "height": 1010,
+      "width": 1263,
+      "height": 1038,
       "actualBounds": {
         "left": 0,
         "top": 0,
-        "width": 1246,
-        "height": 1010
+        "width": 1263,
+        "height": 1038
       },
       "connections": [
         {
-          "id": "indent_top_p5",
-          "x": -70,
-          "y": -300,
+          "id": "indent_5_1",
           "type": "indent",
+          "x": -71,
+          "y": -292,
           "connectsTo": {
             "pieceId": 1,
-            "pointId": "outdent_bottom_p1",
+            "pointId": "outdent_1_2",
             "sequence": 1
           }
         },
         {
-          "id": "outdent_right_p5",
-          "x": 580,
-          "y": 10,
+          "id": "outdent_5_2",
           "type": "outdent",
+          "x": 569,
+          "y": 25,
           "connectsTo": {
             "pieceId": 6,
-            "pointId": "indent_left_p6",
+            "pointId": "indent_6_2",
             "sequence": 1
           }
         }
@@ -218,35 +218,35 @@ export const puzzle1Config: PuzzleConfig = {
       },
       "connections": [
         {
-          "id": "outdent_top_p6",
-          "x": 0,
-          "y": -600,
+          "id": "outdent_6_1",
           "type": "outdent",
+          "x": -3,
+          "y": -581,
           "connectsTo": {
             "pieceId": 2,
-            "pointId": "indent_bottom_p2",
+            "pointId": "indent_2_2",
             "sequence": 1
           }
         },
         {
-          "id": "indent_left_p6",
-          "x": -320,
-          "y": 160,
+          "id": "indent_6_2",
           "type": "indent",
+          "x": -283,
+          "y": 156,
           "connectsTo": {
             "pieceId": 5,
-            "pointId": "outdent_right_p5",
+            "pointId": "outdent_5_2",
             "sequence": 1
           }
         },
         {
-          "id": "indent_right_p6",
-          "x": 320,
-          "y": 190,
+          "id": "indent_6_3",
           "type": "indent",
+          "x": 259,
+          "y": 177,
           "connectsTo": {
             "pieceId": 7,
-            "pointId": "outdent_left_p7",
+            "pointId": "outdent_7_2",
             "sequence": 1
           }
         }
@@ -264,35 +264,35 @@ export const puzzle1Config: PuzzleConfig = {
       },
       "connections": [
         {
-          "id": "outdent_top_p7",
-          "x": 0,
-          "y": -600,
+          "id": "outdent_7_1",
           "type": "outdent",
+          "x": 14,
+          "y": -594,
           "connectsTo": {
             "pieceId": 3,
-            "pointId": "indent_bottom_p3",
+            "pointId": "indent_3_2",
             "sequence": 1
           }
         },
         {
-          "id": "outdent_left_p7",
-          "x": -730,
-          "y": 190,
+          "id": "outdent_7_2",
           "type": "outdent",
+          "x": -758,
+          "y": 151,
           "connectsTo": {
             "pieceId": 6,
-            "pointId": "indent_right_p6",
+            "pointId": "indent_6_3",
             "sequence": 1
           }
         },
         {
-          "id": "outdent_right_p7",
-          "x": 730,
-          "y": 67,
+          "id": "outdent_7_3",
           "type": "outdent",
+          "x": 769,
+          "y": 104,
           "connectsTo": {
             "pieceId": 8,
-            "pointId": "indent_left_p8",
+            "pointId": "indent_8_1",
             "sequence": 1
           }
         }
@@ -310,24 +310,24 @@ export const puzzle1Config: PuzzleConfig = {
       },
       "connections": [
         {
-          "id": "outdent_top_p8",
-          "x": 30,
-          "y": -578,
-          "type": "outdent",
+          "id": "indent_8_1",
+          "type": "indent",
+          "x": -214,
+          "y": 139,
           "connectsTo": {
-            "pieceId": 4,
-            "pointId": "indent_bottom_p4",
+            "pieceId": 7,
+            "pointId": "outdent_7_3",
             "sequence": 1
           }
         },
         {
-          "id": "indent_left_p8",
-          "x": -320,
-          "y": 140,
-          "type": "indent",
+          "id": "outdent_8_2",
+          "type": "outdent",
+          "x": -2,
+          "y": -640,
           "connectsTo": {
-            "pieceId": 8,
-            "pointId": "outdent_right_p7",
+            "pieceId": 4,
+            "pointId": "indent_4_2",
             "sequence": 1
           }
         }
