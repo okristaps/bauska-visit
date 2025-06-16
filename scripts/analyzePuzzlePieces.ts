@@ -1,9 +1,43 @@
 import sharp from "sharp";
 import fs from "fs/promises";
 import path from "path";
-import { PuzzleConfig, PuzzleLayout, PieceDimensions, ConnectionPoint } from "../src/types";
 
-interface Connection extends ConnectionPoint {} // Just for backward compatibility if needed
+interface PuzzleLayout {
+  rows: number;
+  cols: number;
+  totalPieces: number;
+}
+
+interface ConnectionPoint {
+  id: string;
+  type: "indent" | "outdent";
+  x: number;
+  y: number;
+  connectsTo: {
+    pieceId: number;
+    pointId: string;
+  };
+}
+
+interface PieceDimensions {
+  id: number;
+  width: number;
+  height: number;
+  actualBounds: {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
+  connections: ConnectionPoint[];
+}
+
+interface PuzzleConfig {
+  id: number;
+  name: string;
+  layout: PuzzleLayout;
+  dimensions: PieceDimensions[];
+}
 
 const PUZZLE_CONFIGS: Record<string, Omit<PuzzleConfig, "dimensions">> = {
   puzzle_1: {
@@ -26,14 +60,14 @@ const PUZZLE_CONFIGS: Record<string, Omit<PuzzleConfig, "dimensions">> = {
   },
 };
 
-async function analyzePiece(imagePath: string): Promise<PieceDimensions | null> {
+async function analyzePiece(imagePath: string, gridPosition: number): Promise<PieceDimensions | null> {
   try {
-    const pieceId = parseInt(path.basename(imagePath).split(".")[0]);
+    const fileId = parseInt(path.basename(imagePath).split(".")[0]);
     const image = sharp(imagePath);
     const metadata = await image.metadata();
 
     if (!metadata.width || !metadata.height) {
-      console.error(`Could not get dimensions for piece ${pieceId}`);
+      console.error(`Could not get dimensions for piece ${fileId}`);
       return null;
     }
 
@@ -60,7 +94,7 @@ async function analyzePiece(imagePath: string): Promise<PieceDimensions | null> 
     }
 
     return {
-      id: pieceId,
+      id: gridPosition, // Use grid position as piece ID instead of file number
       width: metadata.width,
       height: metadata.height,
       actualBounds: {
@@ -87,6 +121,7 @@ async function generatePuzzleConfig(puzzleId: string) {
     const piecesDir = path.join(process.cwd(), "public", "assets", "puzzles", puzzleId);
     const files = await fs.readdir(piecesDir);
 
+    // Filter and sort files by their numeric ID
     const pieceFiles = files
       .filter((file) => {
         const match = file.match(/^(\d+)\.png$/);
@@ -99,13 +134,29 @@ async function generatePuzzleConfig(puzzleId: string) {
     console.log(`Processing pieces for ${config.name}:`, pieceFiles);
 
     const pieces: PieceDimensions[] = [];
+    const { rows, cols } = config.layout;
 
-    for (const file of pieceFiles) {
-      const result = await analyzePiece(path.join(piecesDir, file));
+    // Map file numbers to grid positions
+    for (let i = 0; i < pieceFiles.length; i++) {
+      const file = pieceFiles[i];
+      const fileId = parseInt(file);
+
+      // Calculate the correct grid position (1-based)
+      // For a 4x4 grid:
+      // File 1.png (fileId=1) should be position 1 (top-left)
+      // File 2.png (fileId=2) should be position 2 (top row, second column)
+      // File 5.png (fileId=5) should be position 5 (second row, first column)
+      // etc.
+      const gridPosition = fileId;
+
+      const result = await analyzePiece(path.join(piecesDir, file), gridPosition);
       if (result) {
         pieces.push(result);
       }
     }
+
+    // Sort pieces by ID to ensure they're in the correct order
+    pieces.sort((a, b) => a.id - b.id);
 
     const puzzleConfig: PuzzleConfig = {
       ...config,

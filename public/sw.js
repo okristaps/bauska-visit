@@ -2,26 +2,7 @@ const CACHE_NAME = "puzzle-game-v1";
 const STATIC_CACHE_NAME = "puzzle-game-static-v1";
 
 // Assets that can be cached for longer periods
-// Excluding puzzle 1 assets as they need to be fresh
-const urlsToCache = [
-  "/puzzle2",
-  "/assets/puzzles/puzzle_2/1.png",
-  "/assets/puzzles/puzzle_2/2.png",
-  "/assets/puzzles/puzzle_2/3.png",
-  "/assets/puzzles/puzzle_2/4.png",
-  "/assets/puzzles/puzzle_2/5.png",
-  "/assets/puzzles/puzzle_2/6.png",
-  "/assets/puzzles/puzzle_2/7.png",
-  "/assets/puzzles/puzzle_2/8.png",
-  "/assets/puzzles/puzzle_2/9.png",
-  "/assets/puzzles/puzzle_2/10.png",
-  "/assets/puzzles/puzzle_2/11.png",
-  "/assets/puzzles/puzzle_2/12.png",
-  "/assets/puzzles/puzzle_2/13.png",
-  "/assets/puzzles/puzzle_2/14.png",
-  "/assets/puzzles/puzzle_2/15.png",
-  "/assets/puzzles/puzzle_2/16.png",
-];
+const urlsToCache = [];
 
 // Install event - cache resources
 self.addEventListener("install", (event) => {
@@ -37,8 +18,8 @@ self.addEventListener("install", (event) => {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  // Never cache puzzle 1 assets
-  if (url.pathname.includes("puzzle_1") || url.pathname === "/puzzle") {
+  // Never cache puzzle assets
+  if (url.pathname.includes("puzzles/puzzle_") || url.pathname.includes("/puzzle")) {
     event.respondWith(fetch(event.request));
     return;
   }
@@ -58,16 +39,20 @@ self.addEventListener("fetch", (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener("activate", (event) => {
+  // Immediately claim clients to ensure the new service worker takes over
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== STATIC_CACHE_NAME) {
-            console.log("Deleting old cache:", cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    Promise.all([
+      self.clients.claim(),
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (cacheName !== CACHE_NAME && cacheName !== STATIC_CACHE_NAME) {
+              console.log("Deleting old cache:", cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      }),
+    ])
   );
 });

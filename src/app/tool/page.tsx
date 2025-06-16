@@ -1,12 +1,9 @@
 'use client';
 
-import { puzzlePieceDimensions, PieceDimensions, ConnectionPoint } from '@/config/puzzleDimensions';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { PuzzleConfig } from '@/types';
 
 const SCALE_FACTOR = 0.2;
-
-// The order for the grid: 1 2 3 4 (top), 5 6 7 8 (bottom)
-const gridOrder = [1, 2, 3, 4, 5, 6, 7, 8];
 
 function renderPieceId(id: number, showIds: boolean) {
     if (!showIds) return null;
@@ -17,150 +14,156 @@ function renderPieceId(id: number, showIds: boolean) {
     );
 }
 
-function renderDot(point: ConnectionPoint, piece: PieceDimensions, showIds: boolean) {
-    const DOT_SIZE = 24;
-    // Since x,y are already relative to center in the config, just scale them
-    const relativeX = point.x * SCALE_FACTOR;
-    const relativeY = point.y * SCALE_FACTOR;
+function renderDot(point: any, piece: any, showIds: boolean) {
+    const isIndent = point.type === 'indent';
+    const dotColor = isIndent ? 'bg-blue-500' : 'bg-red-500';
+    const dotSize = '8px';
+
+    const centerX = piece.width * SCALE_FACTOR / 2;
+    const centerY = piece.height * SCALE_FACTOR / 2;
 
     return (
         <div
-            key={`${point.id}-${point.type}`}
-            className="relative"
+            key={point.id}
+            className={`absolute rounded-full ${dotColor} cursor-help`}
             style={{
-                position: 'absolute',
-                left: '50%',
-                top: '50%',
-                transform: `translate(${relativeX}px, ${relativeY}px)`,
-                zIndex: 2,
+                width: dotSize,
+                height: dotSize,
+                left: centerX + point.x * SCALE_FACTOR - parseInt(dotSize) / 2,
+                top: centerY + point.y * SCALE_FACTOR - parseInt(dotSize) / 2,
             }}
-        >
-            {/* Label above the dot */}
-            {showIds && (
-                <div
-                    className="absolute text-[8px] font-mono bg-black/80 text-white px-0.5 leading-tight rounded whitespace-nowrap"
-                    style={{
-                        bottom: '100%',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        marginBottom: '8px', // Increased distance from dot
-                    }}
-                >
-                    {point.id}
-                </div>
-            )}
-            {/* The dot */}
-            <div
-                className={`rounded-full border-2 border-white shadow ${point.type === 'indent' ? 'bg-blue-500' : 'bg-red-500'}`}
-                style={{
-                    width: DOT_SIZE,
-                    height: DOT_SIZE,
-                    transform: `translate(-${DOT_SIZE / 2}px, -${DOT_SIZE / 2}px)`,
-                    pointerEvents: 'none',
-                }}
-                title={`${point.type} connecting to piece ${point.connectsTo.pieceId} (${point.connectsTo.pointId})`}
-            />
-        </div>
+            title={`${point.id} (${point.x}, ${point.y}) -> piece_${point.connectsTo.pieceId}`}
+        />
     );
 }
 
 export default function PuzzleConfigTool() {
     const [showIds, setShowIds] = useState(true);
+    const [puzzleConfigs, setPuzzleConfigs] = useState<Record<number, PuzzleConfig>>({});
+    const [selectedPuzzleId, setSelectedPuzzleId] = useState<number>(1);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Arrange pieces in the specified grid order
-    const pieces = gridOrder.map(id => puzzlePieceDimensions.find(p => p.id === id)).filter(Boolean) as PieceDimensions[];
+    // Load puzzle configurations dynamically
+    useEffect(() => {
+        async function loadPuzzleConfigs() {
+            try {
+                setIsLoading(true);
+                // Import both configs dynamically
+                const [puzzle1Module, puzzle2Module] = await Promise.all([
+                    import('@/config/puzzle1Config'),
+                    import('@/config/puzzle2Config')
+                ]);
+                setPuzzleConfigs({
+                    1: puzzle1Module.puzzle1Config,
+                    2: puzzle2Module.puzzle2Config
+                });
+            } catch (error) {
+                console.error('Error loading puzzle configurations:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        loadPuzzleConfigs();
+    }, []);
 
-    // Calculate container width based on the sum of the first row's widths
-    const firstRowWidth = pieces.slice(0, 4).reduce((sum, piece) => sum + piece.width * SCALE_FACTOR, 0);
-    const secondRowWidth = pieces.slice(4).reduce((sum, piece) => sum + piece.width * SCALE_FACTOR, 0);
-    const containerWidth = Math.max(firstRowWidth, secondRowWidth);
+    if (isLoading || !puzzleConfigs[selectedPuzzleId]) {
+        return (
+            <div className="min-h-screen bg-gray-100 p-8 flex items-center justify-center">
+                <div className="text-xl font-semibold text-gray-600">Loading puzzle configurations...</div>
+            </div>
+        );
+    }
+
+    const selectedPuzzle = puzzleConfigs[selectedPuzzleId];
+
+    // Sort pieces by ID to ensure correct order
+    const pieces = [...selectedPuzzle.dimensions].sort((a, b) => a.id - b.id);
+
+    // Calculate container width based on the sum of each row's widths
+    const rowWidths = Array.from({ length: selectedPuzzle.layout.rows }, (_, rowIndex) => {
+        const startIdx = rowIndex * selectedPuzzle.layout.cols;
+        return pieces
+            .slice(startIdx, startIdx + selectedPuzzle.layout.cols)
+            .reduce((sum, piece) => sum + piece.width * SCALE_FACTOR, 0);
+    });
+    const containerWidth = Math.max(...rowWidths);
 
     return (
         <div className="min-h-screen bg-gray-100 p-8">
             <div className="mx-auto" style={{ maxWidth: containerWidth + 96 }}>
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-2xl font-bold">Puzzle Config Tool: Connection Points</h1>
-                    <button
-                        onClick={() => setShowIds(!showIds)}
-                        className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                    >
-                        {showIds ? 'Hide IDs' : 'Show IDs'}
-                    </button>
+                    <h1 className="text-2xl font-bold">Puzzle Config Tool: {selectedPuzzle.name}</h1>
+                    <div className="flex gap-4">
+                        <select
+                            value={selectedPuzzleId}
+                            onChange={(e) => setSelectedPuzzleId(parseInt(e.target.value))}
+                            className="px-4 py-2 bg-white rounded-lg border border-gray-300"
+                        >
+                            <option value="1">Puzzle 1 (2x4)</option>
+                            <option value="2">Puzzle 2 (4x4)</option>
+                        </select>
+                        <button
+                            onClick={() => setShowIds(!showIds)}
+                            className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                        >
+                            {showIds ? 'Hide IDs' : 'Show IDs'}
+                        </button>
+                    </div>
                 </div>
-                <div className="bg-white rounded-xl shadow-lg p-8">
-                    {/* First row */}
-                    <div className="flex gap-8 mb-8">
-                        {pieces.slice(0, 4).map((piece) => (
-                            <div
-                                key={piece.id}
-                                className="relative"
-                                style={{
-                                    width: piece.width * SCALE_FACTOR,
-                                    height: piece.height * SCALE_FACTOR,
-                                }}
-                            >
-                                {renderPieceId(piece.id, showIds)}
-                                <div
-                                    className="relative w-full h-full"
-                                    style={{
-                                        outline: '2px solid black',
-                                        outlineOffset: '2px',
-                                        background: 'white',
-                                    }}
-                                >
-                                    <img
-                                        src={`/assets/puzzles/puzzle_1/${piece.id}.png`}
-                                        alt={`Puzzle piece ${piece.id}`}
-                                        className="w-full h-full select-none"
-                                        draggable={false}
-                                        style={{
-                                            pointerEvents: 'none',
-                                            objectFit: 'contain',
-                                        }}
-                                    />
-                                    {piece.connections.map(point => renderDot(point, piece, showIds))}
-                                </div>
-                            </div>
-                        ))}
+                <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col">
+                    {/* Debug info */}
+                    <div className="mb-4 text-sm font-mono bg-gray-100 p-2 rounded">
+                        Pieces order: {pieces.map(p => p.id).join(', ')}
                     </div>
-                    {/* Second row */}
-                    <div className="flex gap-8">
-                        {pieces.slice(4).map((piece) => (
-                            <div
-                                key={piece.id}
-                                className="relative"
-                                style={{
-                                    width: piece.width * SCALE_FACTOR,
-                                    height: piece.height * SCALE_FACTOR,
-                                }}
-                            >
-                                {renderPieceId(piece.id, showIds)}
-                                <div
-                                    className="relative w-full h-full"
-                                    style={{
-                                        outline: '2px solid black',
-                                        outlineOffset: '2px',
-                                        background: 'white',
-                                    }}
-                                >
-                                    <img
-                                        src={`/assets/puzzles/puzzle_1/${piece.id}.png`}
-                                        alt={`Puzzle piece ${piece.id}`}
-                                        className="w-full h-full select-none"
-                                        draggable={false}
-                                        style={{
-                                            pointerEvents: 'none',
-                                            objectFit: 'contain',
-                                        }}
-                                    />
-                                    {piece.connections.map(point => renderDot(point, piece, showIds))}
+                    {/* Render rows based on layout */}
+                    {Array.from({ length: selectedPuzzle.layout.rows }, (_, rowIndex) => {
+                        const startIdx = rowIndex * selectedPuzzle.layout.cols;
+                        const rowPieces = pieces.slice(startIdx, startIdx + selectedPuzzle.layout.cols);
+
+                        return (
+                            <div key={rowIndex} className="flex gap-8 mb-8 last:mb-0">
+                                {/* Debug info for row */}
+                                <div className="absolute -left-8 text-sm font-mono text-gray-500">
+                                    Row {rowIndex}:
                                 </div>
+                                {rowPieces.map((piece) => (
+                                    <div
+                                        key={piece.id}
+                                        className="relative"
+                                        style={{
+                                            width: piece.width * SCALE_FACTOR,
+                                            height: piece.height * SCALE_FACTOR,
+                                        }}
+                                    >
+                                        {renderPieceId(piece.id, showIds)}
+                                        <div
+                                            className="relative w-full h-full"
+                                            style={{
+                                                outline: '2px solid black',
+                                                outlineOffset: '2px',
+                                                background: 'white',
+                                            }}
+                                        >
+                                            <img
+                                                src={`/assets/puzzles/puzzle_${selectedPuzzle.id}/${piece.id}.png?v=${Date.now()}`}
+                                                alt={`Puzzle piece ${piece.id}`}
+                                                className="w-full h-full select-none"
+                                                draggable={false}
+                                                style={{
+                                                    pointerEvents: 'none',
+                                                    objectFit: 'contain',
+                                                }}
+                                            />
+                                            {piece.connections.map(point => renderDot(point, piece, showIds))}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
+                        );
+                    })}
                 </div>
                 <div className="text-center mt-4 text-gray-600">
-                    Pieces are shown in grid order (top: 1 2 3 4, bottom: 5 6 7 8).<br />
+                    Pieces are shown in grid order ({selectedPuzzle.layout.rows}x{selectedPuzzle.layout.cols} grid).<br />
                     Blue dots are indents, red dots are outdents. Hover over dots to see connections.<br />
                     Coordinates are relative to the center of each piece.
                 </div>

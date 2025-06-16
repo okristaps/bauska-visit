@@ -1,205 +1,206 @@
+// Auto-generated puzzle configuration
 import { PuzzleConfig } from "@/types";
 
 export const puzzle2Config: PuzzleConfig = {
-  id: 2,
-  name: "Bauska Castle Garden",
-  layout: {
-    rows: 4,
-    cols: 4,
-    totalPieces: 16,
+  "id": 2,
+  "name": "Bauska Castle Garden",
+  "layout": {
+    "rows": 4,
+    "cols": 4,
+    "totalPieces": 16
   },
-  dimensions: [
+  "dimensions": [
     {
-      id: 1,
-      width: 936,
-      height: 956,
-      actualBounds: {
-        left: 0,
-        top: 0,
-        width: 936,
-        height: 956,
+      "id": 1,
+      "width": 936,
+      "height": 956,
+      "actualBounds": {
+        "left": 0,
+        "top": 0,
+        "width": 936,
+        "height": 956
       },
-      connections: [],
+      "connections": []
     },
     {
-      id: 2,
-      width: 792,
-      height: 770,
-      actualBounds: {
-        left: 0,
-        top: 0,
-        width: 792,
-        height: 770,
+      "id": 2,
+      "width": 792,
+      "height": 770,
+      "actualBounds": {
+        "left": 0,
+        "top": 0,
+        "width": 792,
+        "height": 770
       },
-      connections: [],
+      "connections": []
     },
     {
-      id: 3,
-      width: 1027,
-      height: 777,
-      actualBounds: {
-        left: 0,
-        top: 0,
-        width: 1027,
-        height: 777,
+      "id": 3,
+      "width": 1027,
+      "height": 777,
+      "actualBounds": {
+        "left": 0,
+        "top": 0,
+        "width": 1027,
+        "height": 777
       },
-      connections: [],
+      "connections": []
     },
     {
-      id: 4,
-      width: 934,
-      height: 973,
-      actualBounds: {
-        left: 0,
-        top: 0,
-        width: 934,
-        height: 973,
+      "id": 4,
+      "width": 934,
+      "height": 973,
+      "actualBounds": {
+        "left": 0,
+        "top": 0,
+        "width": 934,
+        "height": 973
       },
-      connections: [],
+      "connections": []
     },
     {
-      id: 5,
-      width: 971,
-      height: 810,
-      actualBounds: {
-        left: 0,
-        top: 0,
-        width: 971,
-        height: 810,
+      "id": 5,
+      "width": 971,
+      "height": 810,
+      "actualBounds": {
+        "left": 0,
+        "top": 0,
+        "width": 971,
+        "height": 810
       },
-      connections: [],
+      "connections": []
     },
     {
-      id: 6,
-      width: 784,
-      height: 1192,
-      actualBounds: {
-        left: 0,
-        top: 0,
-        width: 784,
-        height: 1192,
+      "id": 6,
+      "width": 784,
+      "height": 1192,
+      "actualBounds": {
+        "left": 0,
+        "top": 0,
+        "width": 784,
+        "height": 1192
       },
-      connections: [],
+      "connections": []
     },
     {
-      id: 7,
-      width: 968,
-      height: 975,
-      actualBounds: {
-        left: 0,
-        top: 0,
-        width: 968,
-        height: 975,
+      "id": 7,
+      "width": 968,
+      "height": 975,
+      "actualBounds": {
+        "left": 0,
+        "top": 0,
+        "width": 968,
+        "height": 975
       },
-      connections: [],
+      "connections": []
     },
     {
-      id: 8,
-      width: 983,
-      height: 810,
-      actualBounds: {
-        left: 0,
-        top: 0,
-        width: 983,
-        height: 810,
+      "id": 8,
+      "width": 983,
+      "height": 810,
+      "actualBounds": {
+        "left": 0,
+        "top": 0,
+        "width": 983,
+        "height": 810
       },
-      connections: [],
+      "connections": []
     },
     {
-      id: 9,
-      width: 790,
-      height: 979,
-      actualBounds: {
-        left: 0,
-        top: 0,
-        width: 790,
-        height: 979,
+      "id": 9,
+      "width": 790,
+      "height": 979,
+      "actualBounds": {
+        "left": 0,
+        "top": 0,
+        "width": 790,
+        "height": 979
       },
-      connections: [],
+      "connections": []
     },
     {
-      id: 10,
-      width: 1128,
-      height: 787,
-      actualBounds: {
-        left: 0,
-        top: 0,
-        width: 1128,
-        height: 787,
+      "id": 10,
+      "width": 1128,
+      "height": 787,
+      "actualBounds": {
+        "left": 0,
+        "top": 0,
+        "width": 1128,
+        "height": 787
       },
-      connections: [],
+      "connections": []
     },
     {
-      id: 11,
-      width: 819,
-      height: 1006,
-      actualBounds: {
-        left: 0,
-        top: 0,
-        width: 819,
-        height: 1006,
+      "id": 11,
+      "width": 819,
+      "height": 1006,
+      "actualBounds": {
+        "left": 0,
+        "top": 0,
+        "width": 819,
+        "height": 1006
       },
-      connections: [],
+      "connections": []
     },
     {
-      id: 12,
-      width: 931,
-      height: 1121,
-      actualBounds: {
-        left: 0,
-        top: 0,
-        width: 931,
-        height: 1121,
+      "id": 12,
+      "width": 931,
+      "height": 1121,
+      "actualBounds": {
+        "left": 0,
+        "top": 0,
+        "width": 931,
+        "height": 1121
       },
-      connections: [],
+      "connections": []
     },
     {
-      id: 13,
-      width: 980,
-      height: 926,
-      actualBounds: {
-        left: 0,
-        top: 0,
-        width: 980,
-        height: 926,
+      "id": 13,
+      "width": 980,
+      "height": 926,
+      "actualBounds": {
+        "left": 0,
+        "top": 0,
+        "width": 980,
+        "height": 926
       },
-      connections: [],
+      "connections": []
     },
     {
-      id: 14,
-      width: 986,
-      height: 969,
-      actualBounds: {
-        left: 0,
-        top: 0,
-        width: 986,
-        height: 969,
+      "id": 14,
+      "width": 986,
+      "height": 969,
+      "actualBounds": {
+        "left": 0,
+        "top": 0,
+        "width": 986,
+        "height": 969
       },
-      connections: [],
+      "connections": []
     },
     {
-      id: 15,
-      width: 805,
-      height: 952,
-      actualBounds: {
-        left: 0,
-        top: 0,
-        width: 805,
-        height: 952,
+      "id": 15,
+      "width": 805,
+      "height": 952,
+      "actualBounds": {
+        "left": 0,
+        "top": 0,
+        "width": 805,
+        "height": 952
       },
-      connections: [],
+      "connections": []
     },
     {
-      id: 16,
-      width: 942,
-      height: 782,
-      actualBounds: {
-        left: 0,
-        top: 0,
-        width: 942,
-        height: 782,
+      "id": 16,
+      "width": 942,
+      "height": 782,
+      "actualBounds": {
+        "left": 0,
+        "top": 0,
+        "width": 942,
+        "height": 782
       },
-      connections: [],
-    },
-  ],
+      "connections": []
+    }
+  ]
 };
