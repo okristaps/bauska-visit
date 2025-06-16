@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { PuzzleConfig, ConnectionPoint } from '@/types';
+import { PuzzleConfig, ConnectionPoint, PieceDimensions } from '@/types';
 
-const ARROW_KEY_MOVE_AMOUNT = 5;
+const ARROW_KEY_MOVE_AMOUNT = 1;
 
 interface SelectedPoint {
     pieceId: number;
@@ -63,6 +63,7 @@ export default function PuzzleConfigTool() {
     const [scaleFactor, setScaleFactor] = useState(0.2);
     const [copySuccess, setCopySuccess] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const previewRef = useRef<HTMLDivElement>(null);
 
     // Calculate the total unscaled dimensions of the puzzle
     const calculatePuzzleDimensions = useCallback((config: PuzzleConfig) => {
@@ -297,6 +298,66 @@ ${piece.connections.map(conn => `        {
         });
     }, [puzzleConfigs, selectedPuzzleId]);
 
+    // Calculate piece positions for the preview
+    const calculatePiecePositions = useCallback((pieces: PieceDimensions[]) => {
+        const positions = new Map<number, { x: number, y: number }>();
+
+        // Start with piece 1 at (0,0)
+        positions.set(1, { x: 0, y: 0 });
+
+        // Helper to check if a piece is positioned
+        const isPositioned = (id: number) => positions.has(id);
+
+        // Helper to position a piece relative to another piece based on connection points
+        const positionPieceRelativeTo = (
+            piece: PieceDimensions,
+            connection: ConnectionPoint,
+            anchorPiece: PieceDimensions,
+            anchorPos: { x: number, y: number }
+        ) => {
+            const anchorPoint = anchorPiece.connections.find((p: ConnectionPoint) => p.id === connection.connectsTo.pointId);
+            if (!anchorPoint) return null;
+
+            // Calculate center points
+            const pieceCenter = { x: piece.width / 2, y: piece.height / 2 };
+            const anchorCenter = { x: anchorPiece.width / 2, y: anchorPiece.height / 2 };
+
+            // Calculate the position that would align the connection points
+            const x = anchorPos.x + (anchorCenter.x + anchorPoint.x) - (pieceCenter.x + connection.x);
+            const y = anchorPos.y + (anchorCenter.y + anchorPoint.y) - (pieceCenter.y + connection.y);
+
+            return { x, y };
+        };
+
+        // Keep trying to position pieces until we can't position any more
+        let madeProgress = true;
+        while (madeProgress) {
+            madeProgress = false;
+
+            for (const piece of pieces) {
+                if (isPositioned(piece.id)) continue;
+
+                // Try to position this piece based on its connections
+                for (const connection of piece.connections) {
+                    const connectedPieceId = connection.connectsTo.pieceId;
+                    const anchorPos = positions.get(connectedPieceId);
+                    const anchorPiece = pieces.find(p => p.id === connectedPieceId);
+
+                    if (anchorPos && anchorPiece) {
+                        const newPos = positionPieceRelativeTo(piece, connection, anchorPiece, anchorPos);
+                        if (newPos) {
+                            positions.set(piece.id, newPos);
+                            madeProgress = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return positions;
+    }, []);
+
     if (isLoading || !puzzleConfigs[selectedPuzzleId]) {
         return (
             <div className="min-h-screen bg-gray-100 p-8 flex items-center justify-center">
@@ -309,118 +370,190 @@ ${piece.connections.map(conn => `        {
     const pieces = [...selectedPuzzle.dimensions].sort((a, b) => a.id - b.id);
 
     return (
-        <div className="min-h-screen bg-gray-100 p-4 flex gap-4">
-            {/* Left side - Puzzle pieces */}
-            <div ref={containerRef} className="w-2/3 bg-white rounded-xl shadow-lg p-4 overflow-auto">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-2xl font-bold text-black">Puzzle Config Tool: {selectedPuzzle.name}</h1>
-                    <div className="flex gap-4">
-                        <select
-                            value={selectedPuzzleId}
-                            onChange={(e) => setSelectedPuzzleId(parseInt(e.target.value))}
-                            className="px-4 py-2 bg-white rounded-lg border border-gray-300 text-black"
-                        >
-                            <option value="1">Puzzle 1 (2x4)</option>
-                            <option value="2">Puzzle 2 (4x4)</option>
-                        </select>
-                        <button
-                            onClick={() => setShowIds(!showIds)}
-                            className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                        >
-                            {showIds ? 'Hide IDs' : 'Show IDs'}
-                        </button>
-                        <button
-                            onClick={() => setAddingPointType('indent')}
-                            className={`px-4 py-2 rounded-lg transition-colors ${addingPointType === 'indent' ? 'bg-blue-500 text-white' : 'bg-white border border-gray-300 text-black'}`}
-                        >
-                            Add Indent
-                        </button>
-                        <button
-                            onClick={() => setAddingPointType('outdent')}
-                            className={`px-4 py-2 rounded-lg transition-colors ${addingPointType === 'outdent' ? 'bg-red-500 text-white' : 'bg-white border border-gray-300 text-black'}`}
-                        >
-                            Add Outdent
-                        </button>
-                        <button
-                            onClick={handleSave}
-                            disabled={isSaving}
-                            className={`px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                            {isSaving ? 'Saving...' : 'Save'}
-                        </button>
+        <div className="min-h-screen bg-gray-100 p-4 flex flex-col gap-4">
+            {/* Top section - Configurator and Config */}
+            <div className="flex gap-4 h-[60vh]">
+                {/* Left side - Puzzle pieces */}
+                <div ref={containerRef} className="w-2/3 bg-white rounded-xl shadow-lg p-4 overflow-auto">
+                    <div className="flex justify-between items-center mb-8">
+                        <h1 className="text-2xl font-bold text-black">Puzzle Config Tool: {selectedPuzzle.name}</h1>
+                        <div className="flex gap-4">
+                            <select
+                                value={selectedPuzzleId}
+                                onChange={(e) => setSelectedPuzzleId(parseInt(e.target.value))}
+                                className="px-4 py-2 bg-white rounded-lg border border-gray-300 text-black"
+                            >
+                                <option value="1">Puzzle 1 (2x4)</option>
+                                <option value="2">Puzzle 2 (4x4)</option>
+                            </select>
+                            <button
+                                onClick={() => setShowIds(!showIds)}
+                                className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                            >
+                                {showIds ? 'Hide IDs' : 'Show IDs'}
+                            </button>
+                            <button
+                                onClick={() => setAddingPointType('indent')}
+                                className={`px-4 py-2 rounded-lg transition-colors ${addingPointType === 'indent' ? 'bg-blue-500 text-white' : 'bg-white border border-gray-300 text-black'}`}
+                            >
+                                Add Indent
+                            </button>
+                            <button
+                                onClick={() => setAddingPointType('outdent')}
+                                className={`px-4 py-2 rounded-lg transition-colors ${addingPointType === 'outdent' ? 'bg-red-500 text-white' : 'bg-white border border-gray-300 text-black'}`}
+                            >
+                                Add Outdent
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                disabled={isSaving}
+                                className={`px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                                {isSaving ? 'Saving...' : 'Save'}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-8" style={{
+                        display: 'grid',
+                        gridTemplateColumns: `repeat(${selectedPuzzle.layout.cols}, min-content)`,
+                        justifyContent: 'space-between',
+                        alignItems: 'start'
+                    }}>
+                        {pieces.map((piece) => (
+                            <div
+                                key={piece.id}
+                                className="relative bg-gray-100 rounded-lg p-2 cursor-pointer"
+                                onClick={(e) => handlePieceClick(e, piece)}
+                                style={{
+                                    width: piece.width * scaleFactor,
+                                    height: piece.height * scaleFactor,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                {renderPieceId(piece.id, showIds)}
+                                <img
+                                    src={`/assets/puzzles/puzzle_${selectedPuzzleId}/${piece.id}.png`}
+                                    alt={`Piece ${piece.id}`}
+                                    className="w-full h-full object-contain"
+                                    style={{
+                                        maxWidth: '100%',
+                                        maxHeight: '100%'
+                                    }}
+                                />
+                                {piece.connections.map((point) =>
+                                    renderDot(
+                                        point,
+                                        piece,
+                                        showIds,
+                                        selectedPoint?.pieceId === piece.id && selectedPoint?.pointId === point.id,
+                                        handlePointClick,
+                                        scaleFactor
+                                    )
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </div>
 
-                <div className="grid gap-8" style={{
-                    display: 'grid',
-                    gridTemplateColumns: `repeat(${selectedPuzzle.layout.cols}, min-content)`,
-                    justifyContent: 'space-between',
-                    alignItems: 'start'
-                }}>
-                    {pieces.map((piece) => (
-                        <div
-                            key={piece.id}
-                            className="relative bg-gray-100 rounded-lg p-2 cursor-pointer"
-                            onClick={(e) => handlePieceClick(e, piece)}
-                            style={{
-                                width: piece.width * scaleFactor,
-                                height: piece.height * scaleFactor,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
-                        >
-                            {renderPieceId(piece.id, showIds)}
-                            <img
-                                src={`/assets/puzzles/puzzle_${selectedPuzzleId}/${piece.id}.png`}
-                                alt={`Piece ${piece.id}`}
-                                className="w-full h-full object-contain"
-                                style={{
-                                    maxWidth: '100%',
-                                    maxHeight: '100%'
-                                }}
-                            />
-                            {piece.connections.map((point) =>
-                                renderDot(
-                                    point,
-                                    piece,
-                                    showIds,
-                                    selectedPoint?.pieceId === piece.id && selectedPoint?.pointId === point.id,
-                                    handlePointClick,
-                                    scaleFactor
-                                )
-                            )}
+                {/* Right side - Config file */}
+                <div className="w-1/3 bg-white rounded-xl shadow-lg p-4 flex flex-col">
+                    <div className="flex justify-between items-center mb-4">
+                        <div className="flex items-center gap-4">
+                            <h2 className="text-xl font-bold text-black">puzzle{selectedPuzzleId}Config.ts</h2>
+                            <button
+                                onClick={handleCopyConfig}
+                                className={`px-3 py-1.5 rounded-lg transition-colors ${copySuccess
+                                    ? 'bg-green-500 text-white'
+                                    : 'bg-gray-100 hover:bg-gray-200 text-black'
+                                    }`}
+                            >
+                                {copySuccess ? 'Copied!' : 'Copy Config'}
+                            </button>
                         </div>
-                    ))}
+                        <div className="text-sm text-gray-500">
+                            {selectedPoint
+                                ? `Editing: Piece ${selectedPoint.pieceId}, Point ${selectedPoint.pointId}`
+                                : addingPointType
+                                    ? `Adding new ${addingPointType} point`
+                                    : 'Viewing'}
+                        </div>
+                    </div>
+                    <pre className="text-sm font-mono bg-gray-100 p-4 rounded whitespace-pre overflow-auto text-black flex-1">
+                        <code>{generateConfigFileContent(selectedPuzzle)}</code>
+                    </pre>
                 </div>
             </div>
 
-            {/* Right side - Config file */}
-            <div className="w-1/3 bg-white rounded-xl shadow-lg p-4 overflow-auto">
+            {/* Bottom section - Preview */}
+            <div className="bg-white rounded-xl shadow-lg p-4 flex-1">
                 <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center gap-4">
-                        <h2 className="text-xl font-bold text-black">puzzle{selectedPuzzleId}Config.ts</h2>
-                        <button
-                            onClick={handleCopyConfig}
-                            className={`px-3 py-1.5 rounded-lg transition-colors ${copySuccess
-                                ? 'bg-green-500 text-white'
-                                : 'bg-gray-100 hover:bg-gray-200 text-black'
-                                }`}
-                        >
-                            {copySuccess ? 'Copied!' : 'Copy Config'}
-                        </button>
-                    </div>
+                    <h2 className="text-xl font-bold text-black">Preview</h2>
                     <div className="text-sm text-gray-500">
-                        {selectedPoint
-                            ? `Editing: Piece ${selectedPoint.pieceId}, Point ${selectedPoint.pointId}`
-                            : addingPointType
-                                ? `Adding new ${addingPointType} point`
-                                : 'Viewing'}
+                        Shows assembled puzzle with connected pieces
                     </div>
                 </div>
-                <pre className="text-sm font-mono bg-gray-100 p-4 rounded whitespace-pre overflow-auto text-black">
-                    <code>{generateConfigFileContent(selectedPuzzle)}</code>
-                </pre>
+                <div
+                    ref={previewRef}
+                    className="relative w-full h-full flex items-center justify-center overflow-auto"
+                    style={{ minHeight: '400px' }}
+                >
+                    <div className="relative">
+                        {(() => {
+                            const positions = calculatePiecePositions(pieces);
+                            // Find bounds to center the preview
+                            let minX = 0, minY = 0, maxX = 0, maxY = 0;
+                            positions.forEach((pos, id) => {
+                                const piece = pieces.find(p => p.id === id);
+                                if (!piece) return;
+                                minX = Math.min(minX, pos.x);
+                                minY = Math.min(minY, pos.y);
+                                maxX = Math.max(maxX, pos.x + piece.width);
+                                maxY = Math.max(maxY, pos.y + piece.height);
+                            });
+
+                            // Offset to center and ensure no negative positions
+                            const offsetX = -minX;
+                            const offsetY = -minY;
+
+                            return pieces.map((piece) => {
+                                const pos = positions.get(piece.id);
+                                if (!pos) return null;
+
+                                return (
+                                    <div
+                                        key={piece.id}
+                                        className="absolute"
+                                        style={{
+                                            left: (pos.x + offsetX) * scaleFactor,
+                                            top: (pos.y + offsetY) * scaleFactor,
+                                            width: piece.width * scaleFactor,
+                                            height: piece.height * scaleFactor,
+                                        }}
+                                    >
+                                        <img
+                                            src={`/assets/puzzles/puzzle_${selectedPuzzleId}/${piece.id}.png`}
+                                            alt={`Piece ${piece.id}`}
+                                            className="w-full h-full object-contain"
+                                        />
+                                        {piece.connections.map((point) => (
+                                            <div
+                                                key={point.id}
+                                                className={`absolute w-2 h-2 rounded-full ${point.type === 'indent' ? 'bg-blue-500' : 'bg-red-500'}`}
+                                                style={{
+                                                    left: (piece.width / 2 + point.x) * scaleFactor - 4,
+                                                    top: (piece.height / 2 + point.y) * scaleFactor - 4,
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                );
+                            });
+                        })()}
+                    </div>
+                </div>
             </div>
         </div>
     );

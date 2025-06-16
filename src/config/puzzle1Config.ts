@@ -22,8 +22,8 @@ export const puzzle1Config: PuzzleConfig = {
       "connections": [
         {
           "id": "outdent_right_p1",
-          "x": 590,
-          "y": -115,
+          "x": 560,
+          "y": -120,
           "type": "outdent",
           "connectsTo": {
             "pieceId": 2,
@@ -33,8 +33,8 @@ export const puzzle1Config: PuzzleConfig = {
         },
         {
           "id": "outdent_bottom_p1",
-          "x": -80,
-          "y": 590,
+          "x": -67,
+          "y": 534,
           "type": "outdent",
           "connectsTo": {
             "pieceId": 5,
@@ -57,7 +57,7 @@ export const puzzle1Config: PuzzleConfig = {
       "connections": [
         {
           "id": "indent_left_p2",
-          "x": -335,
+          "x": -320,
           "y": 0,
           "type": "indent",
           "connectsTo": {
@@ -68,8 +68,8 @@ export const puzzle1Config: PuzzleConfig = {
         },
         {
           "id": "indent_bottom_p2",
-          "x": -35,
-          "y": 240,
+          "x": 0,
+          "y": 300,
           "type": "indent",
           "connectsTo": {
             "pieceId": 6,
@@ -79,8 +79,8 @@ export const puzzle1Config: PuzzleConfig = {
         },
         {
           "id": "indent_right_p2",
-          "x": 320,
-          "y": 0,
+          "x": 310,
+          "y": 5,
           "type": "indent",
           "connectsTo": {
             "pieceId": 3,
@@ -114,8 +114,8 @@ export const puzzle1Config: PuzzleConfig = {
         },
         {
           "id": "indent_right_p3",
-          "x": 380,
-          "y": -35,
+          "x": 420,
+          "y": -30,
           "type": "indent",
           "connectsTo": {
             "pieceId": 4,
@@ -149,8 +149,8 @@ export const puzzle1Config: PuzzleConfig = {
       "connections": [
         {
           "id": "indent_bottom_p4",
-          "x": 130,
-          "y": 300,
+          "x": 145,
+          "y": 265,
           "type": "indent",
           "connectsTo": {
             "pieceId": 8,
@@ -160,7 +160,7 @@ export const puzzle1Config: PuzzleConfig = {
         },
         {
           "id": "outdent_left_p4",
-          "x": -530,
+          "x": -580,
           "y": -20,
           "type": "outdent",
           "connectsTo": {
@@ -185,7 +185,7 @@ export const puzzle1Config: PuzzleConfig = {
         {
           "id": "indent_top_p5",
           "x": -70,
-          "y": -275,
+          "y": -300,
           "type": "indent",
           "connectsTo": {
             "pieceId": 1,
@@ -195,8 +195,8 @@ export const puzzle1Config: PuzzleConfig = {
         },
         {
           "id": "outdent_right_p5",
-          "x": 570,
-          "y": 20,
+          "x": 580,
+          "y": 10,
           "type": "outdent",
           "connectsTo": {
             "pieceId": 6,
@@ -230,8 +230,8 @@ export const puzzle1Config: PuzzleConfig = {
         },
         {
           "id": "indent_left_p6",
-          "x": -280,
-          "y": 145,
+          "x": -320,
+          "y": 160,
           "type": "indent",
           "connectsTo": {
             "pieceId": 5,
@@ -288,7 +288,7 @@ export const puzzle1Config: PuzzleConfig = {
         {
           "id": "outdent_right_p7",
           "x": 730,
-          "y": 100,
+          "y": 67,
           "type": "outdent",
           "connectsTo": {
             "pieceId": 8,
@@ -312,7 +312,7 @@ export const puzzle1Config: PuzzleConfig = {
         {
           "id": "outdent_top_p8",
           "x": 30,
-          "y": -600,
+          "y": -578,
           "type": "outdent",
           "connectsTo": {
             "pieceId": 4,
@@ -323,7 +323,7 @@ export const puzzle1Config: PuzzleConfig = {
         {
           "id": "indent_left_p8",
           "x": -320,
-          "y": 160,
+          "y": 140,
           "type": "indent",
           "connectsTo": {
             "pieceId": 8,
