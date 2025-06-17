@@ -4,17 +4,19 @@ import { useState, useEffect } from 'react';
 import PuzzleGame from '@/components/PuzzleGame';
 import Header from '@/components/Header';
 import FullscreenPrompt from './FullscreenPrompt';
+import { useRouter } from 'next/navigation';
 
 interface PuzzlePageLayoutProps {
     puzzleId: number;
     title: string;
     onComplete?: () => void;
+    infoBoxText?: string;
 }
 
-export default function PuzzlePageLayout({ puzzleId, title, onComplete }: PuzzlePageLayoutProps) {
+export default function PuzzlePageLayout({ puzzleId, title, onComplete, infoBoxText }: PuzzlePageLayoutProps) {
     const [time, setTime] = useState(0);
     const [timerStarted, setTimerStarted] = useState(false);
-
+    const router = useRouter();
     useEffect(() => {
         document.body.classList.add('puzzle-page');
 
@@ -61,16 +63,21 @@ export default function PuzzlePageLayout({ puzzleId, title, onComplete }: Puzzle
             <FullscreenPrompt />
             <Header />
 
-            {timerStarted && (
-                <p className="absolute top-1 right-1 sm:top-2 sm:right-2 lg:top-8 lg:right-8 text-xs sm:text-sm lg:text-xl font-mono bg-black bg-opacity-50 px-1.5 py-0.5 sm:px-2 sm:py-1 lg:px-4 lg:py-2 rounded-lg text-white">
-                    Time: {formatTime(time)}
-                </p>
-            )}
-
-            <div className="flex-none h-[6vh] sm:h-[7vh] lg:h-[10vh] flex flex-col justify-center items-center text-center px-1 sm:px-2 lg:px-4">
-                <p className="text-[10px] sm:text-xs lg:text-base">1. spele no 4 spelem</p>
-                <h1 className="text-sm sm:text-base lg:text-2xl font-bold">{title}</h1>
-                <p className="text-[10px] sm:text-xs lg:text-base"> Spele saksies tikko ka tu pieskarsies kadam gabalinam</p>
+            <div className="flex-none h-[6vh] sm:h-[7vh] lg:h-[10vh] grid grid-cols-[1fr_auto_1fr] items-center px-1 sm:px-2 lg:px-4 w-full">
+                <div></div>
+                <div className="flex flex-col items-center">
+                    <p className="text-[10px] sm:text-xs lg:text-base">{puzzleId}. no 4 spelem</p>
+                    <h1 className="text-sm sm:text-base lg:text-2xl font-bold">{title}</h1>
+                    <p className="text-[10px] sm:text-xs lg:text-base"> Spele saksies tikko ka tu pieskarsies kadam gabalinam</p>
+                </div>
+                <div className="flex justify-end px-2 sm:px-3 lg:px-6">
+                    {timerStarted && (
+                        <div className="flex flex-col items-end min-w-[70px]">
+                            <div className="text-xs sm:text-sm lg:text-base font-medium text-[#0A2342]">Tavs spēles laiks</div>
+                            <div className="text-2xl sm:text-3xl lg:text-5xl font-extrabold text-[#0A2342] font-mono leading-none">{formatTime(time)}</div>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <div className="flex-1 relative">
@@ -82,18 +89,21 @@ export default function PuzzlePageLayout({ puzzleId, title, onComplete }: Puzzle
                 />
             </div>
 
-            <div className="container mx-auto px-1 sm:px-2 lg:px-4 py-1 sm:py-2 lg:py-6 grid grid-cols-[1fr_auto_1fr]">
+            <div className="container mx-auto px-1 sm:px-2 lg:px-4 py-0.5 sm:py-1 lg:py-2 grid grid-cols-[1fr_auto_1fr]">
                 <div></div>
-                <div className="max-w-2xl">
-                    <div className="bg-gray-100 rounded-lg p-1.5 sm:p-2 lg:p-4">
-                        <p className="text-gray-700 text-center text-[10px] sm:text-xs lg:text-base">
-                            Welcome to Bauska! Explore our historic castle and beautiful gardens through this interactive puzzle game. Complete each puzzle to discover more about our cultural heritage.
+                <div className="max-w-lg">
+                    <div className="bg-gray-100 rounded-lg p-1 sm:p-1.5 lg:p-2">
+                        <p className="text-gray-700 text-center text-[9px] sm:text-xs lg:text-sm">
+                            {infoBoxText}
                         </p>
                     </div>
                 </div>
                 <div className="flex justify-end items-center">
-                    <button className="ml-1.5 sm:ml-2 lg:ml-4 px-2 py-1 sm:px-3 sm:py-1.5 lg:px-6 lg:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-[10px] sm:text-xs lg:text-base">
-                        Start Exploring
+                    <button
+                        className="ml-1 sm:ml-1.5 lg:ml-2 px-2 py-2 sm:px-3 sm:py-2.5 lg:px-4 lg:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-[9px] sm:text-xs lg:text-sm"
+                        onClick={() => router.replace("/")}
+                    >
+                        {"Beigt spēli / uz sākumu"}
                     </button>
                 </div>
             </div>

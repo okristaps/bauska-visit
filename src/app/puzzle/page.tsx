@@ -2,11 +2,13 @@
 
 import PuzzlePageLayout from '@/components/PuzzlePageLayout';
 
+
 export default function PuzzlePage() {
     return (
         <PuzzlePageLayout
             puzzleId={1}
-            title="Bauska Castle"
+            infoBoxText="Welcome to Bauska! Explore our historic castle and beautiful gardens through this interactive puzzle game. Complete each puzzle to discover more about our cultural heritage."
+            title="Rundāles pils"
         />
     );
 } 

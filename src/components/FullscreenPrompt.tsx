@@ -1,6 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 
+function isAndroid() {
+    return /android/i.test(navigator.userAgent);
+}
+
 function isMobileOrTablet() {
     return /android|iphone|ipad|ipod|windows phone/i.test(navigator.userAgent);
 }
@@ -8,7 +12,6 @@ function isMobileOrTablet() {
 export default function FullscreenPrompt() {
     const [showFullscreenPrompt, setShowFullscreenPrompt] = useState(false);
     const [showRotatePrompt, setShowRotatePrompt] = useState(false);
-    const [rotatePromptDismissed, setRotatePromptDismissed] = useState(false);
 
     useEffect(() => {
         if (!isMobileOrTablet()) return;
@@ -17,10 +20,7 @@ export default function FullscreenPrompt() {
             const isLandscape = window.innerWidth > window.innerHeight;
             const isFullscreen = document.fullscreenElement || (document as any).webkitFullscreenElement;
             setShowRotatePrompt(!isLandscape);
-            setShowFullscreenPrompt(isLandscape && !isFullscreen && /android/i.test(navigator.userAgent));
-            if (isLandscape && rotatePromptDismissed) {
-                setRotatePromptDismissed(false); // Reset if user rotates back to landscape
-            }
+            setShowFullscreenPrompt(isLandscape && !isFullscreen && isAndroid());
         };
 
         checkState();
@@ -49,7 +49,7 @@ export default function FullscreenPrompt() {
         setShowFullscreenPrompt(false);
     };
 
-    if (showRotatePrompt && !rotatePromptDismissed) {
+    if (showRotatePrompt) {
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80">
                 <div className="bg-white rounded-lg shadow-lg p-6 max-w-xs w-full text-center">
@@ -58,6 +58,12 @@ export default function FullscreenPrompt() {
                     </div>
                     <h2 className="text-lg font-bold mb-2 text-gray-800">Rotate Your Device</h2>
                     <p className="mb-2 text-gray-600">Please rotate your device to landscape mode for the best experience.</p>
+                    <button
+                        onClick={enterFullscreen}
+                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        Continue
+                    </button>
                 </div>
             </div>
         );
