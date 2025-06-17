@@ -5,6 +5,7 @@ import PuzzleGame from '@/components/PuzzleGame';
 import Header from '@/components/Header';
 import FullscreenPrompt from './FullscreenPrompt';
 import { useRouter } from 'next/navigation';
+import { allPuzzleConfigs } from '../config/puzzle1Config';
 
 interface PuzzlePageLayoutProps {
     puzzleId: number;
@@ -16,6 +17,7 @@ interface PuzzlePageLayoutProps {
 export default function PuzzlePageLayout({ puzzleId, title, onComplete, infoBoxText }: PuzzlePageLayoutProps) {
     const [time, setTime] = useState(0);
     const [timerStarted, setTimerStarted] = useState(false);
+    const [showModal, setShowModal] = useState(false);
     const router = useRouter();
     useEffect(() => {
         document.body.classList.add('puzzle-page');
@@ -49,7 +51,7 @@ export default function PuzzlePageLayout({ puzzleId, title, onComplete, infoBoxT
     };
 
     const handleComplete = () => {
-        console.log(`Puzzle ${puzzleId} completed!`);
+        setTimeout(() => setShowModal(true), 500);
         if (onComplete) {
             onComplete();
         }
@@ -107,6 +109,29 @@ export default function PuzzlePageLayout({ puzzleId, title, onComplete, infoBoxT
                     </button>
                 </div>
             </div>
+
+            {showModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-20 transition-colors duration-300">
+                    <div className="bg-[#F7F7F2] border-4 border-[#BFA140] rounded-2xl px-6 py-8 w-[90vw] max-w-md flex flex-col items-center shadow-xl animate-modal-in">
+                        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0A2342] mb-2 text-center">Spēle pabeigta!</h2>
+                        <div className="text-base sm:text-lg text-[#0A2342] font-medium mb-1 text-center">Spēles laiks</div>
+                        <div className="text-4xl sm:text-5xl font-extrabold text-[#0A2342] font-mono mb-6 text-center">{formatTime(time)}</div>
+                        <button
+                            className="bg-[#183153] text-white rounded-lg px-8 py-3 text-base font-medium hover:bg-[#0A2342] transition-colors"
+                            onClick={() => {
+                                if (puzzleId < allPuzzleConfigs.length) {
+                                    router.replace(`/puzzle-${puzzleId + 1}`);
+                                } else {
+                                    router.replace(`/`);
+                                }
+                                setShowModal(false);
+                            }}
+                        >
+                            {puzzleId < allPuzzleConfigs.length ? 'Nākamā spēle' : 'Uz sākumu'}
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 } 
