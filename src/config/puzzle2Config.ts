@@ -200,7 +200,7 @@ export const puzzle2Config: PuzzleConfig = {
           "y": 14,
           "connectsTo": {
             "pieceId": 6,
-            "pointId": "indent_6_3",
+            "pointId": "indent_6_2",
             "sequence": 1
           }
         },

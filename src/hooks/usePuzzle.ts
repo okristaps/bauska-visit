@@ -3,6 +3,8 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { puzzle1Config } from "@/config/puzzle1Config";
 import { puzzle2Config } from "@/config/puzzle2Config";
+import { puzzle3Config } from "@/config/puzzle3Config";
+import { puzzle4Config } from "@/config/puzzle4Config";
 import { PuzzleConfig, PieceState, Position, PieceDimensions, ConnectionPoint } from "@/types/index";
 
 // Constants
@@ -15,10 +17,17 @@ interface UsePuzzleOptions {
   onTimeUpdate?: (time: number) => void;
 }
 
+const puzzleConfigs: Record<number, PuzzleConfig> = {
+  1: puzzle1Config,
+  2: puzzle2Config,
+  3: puzzle3Config,
+  4: puzzle4Config,
+};
+
 export const usePuzzle = ({ puzzleId, onComplete, onTimeUpdate }: UsePuzzleOptions) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scaleFactor, setScaleFactor] = useState(1);
-  const [puzzleConfig, setPuzzleConfig] = useState<PuzzleConfig>(puzzleId === 1 ? puzzle1Config : puzzle2Config);
+  const [puzzleConfig, setPuzzleConfig] = useState<PuzzleConfig>(puzzleConfigs[puzzleId] || puzzle1Config);
   const [pieces, setPieces] = useState<PieceState[]>([]);
   const draggedPieceRef = useRef<number | null>(null);
   const groupDragOffsetsRef = useRef<{ [id: number]: Position }>({});
@@ -379,6 +388,10 @@ export const usePuzzle = ({ puzzleId, onComplete, onTimeUpdate }: UsePuzzleOptio
   }, [pieces, onComplete, isCompleted, puzzleConfig.dimensions, scaleFactor, stopTimer]);
 
   useEffect(() => () => stopTimer(), [stopTimer]);
+
+  useEffect(() => {
+    setPuzzleConfig(puzzleConfigs[puzzleId] || puzzle1Config);
+  }, [puzzleId]);
 
   const getContainerProps = () => ({
     ref: containerRef,
