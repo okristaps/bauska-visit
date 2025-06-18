@@ -1,6 +1,6 @@
 # Jigsaw puzzle builder
 
-This repository contains a application for building, editing, and playing interactive jigsaw puzzles, designed for the Bauska Visit project. It includes a puzzle builder tool, a public puzzle game, and utilities for image normalization and puzzle configuration. At the start it was intended as a game only for a specific project. But as it turns out i needed to build a puzzle builder tool to achieve a puzzle game. So here's a tool for you. Not the best builder, but it works :)
+This repository contains a application for building, editing, and playing interactive jigsaw puzzles. It includes a puzzle builder tool, a public puzzle game, and utilities for image normalization and puzzle configuration. At the start it was intended as a game only for a specific project. But as it turns out i needed to build a puzzle builder tool to achieve a puzzle game. So here's a tool for you. Not the best builder, but it works :)
 
 ## Overview
 
