@@ -58,6 +58,15 @@ const PUZZLE_CONFIGS: Record<string, Omit<PuzzleConfig, "dimensions">> = {
       totalPieces: 16,
     },
   },
+  puzzle_3: {
+    id: 3,
+    name: "Rundales castle",
+    layout: {
+      rows: 4,
+      cols: 4,
+      totalPieces: 16,
+    },
+  },
 };
 
 async function analyzePiece(imagePath: string, gridPosition: number): Promise<PieceDimensions | null> {

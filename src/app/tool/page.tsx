@@ -43,13 +43,15 @@ function PuzzleConfigTool() {
         async function loadPuzzleConfigs() {
             try {
                 setIsLoading(true);
-                const [puzzle1Module, puzzle2Module] = await Promise.all([
+                const [puzzle1Module, puzzle2Module, puzzle3Module] = await Promise.all([
                     import('@/config/puzzle1Config'),
-                    import('@/config/puzzle2Config')
+                    import('@/config/puzzle2Config'),
+                    import('@/config/puzzle3Config'),
                 ]);
                 setPuzzleConfigs({
                     1: puzzle1Module.puzzle1Config,
-                    2: puzzle2Module.puzzle2Config
+                    2: puzzle2Module.puzzle2Config,
+                    3: puzzle3Module.puzzle3Config,
                 });
             } catch (error) {
                 console.error('Error loading puzzle configurations:', error);

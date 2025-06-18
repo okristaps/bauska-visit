@@ -39,6 +39,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                     >
                         <option value="1">Puzzle 1 (2x4)</option>
                         <option value="2">Puzzle 2 (4x4)</option>
+                        <option value="3">Puzzle 3 (4x4)</option>
                     </select>
                     <button
                         onClick={onToggleShowIds}
