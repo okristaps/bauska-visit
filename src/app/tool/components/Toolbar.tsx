@@ -12,6 +12,7 @@ interface ToolbarProps {
     addingPointType: 'indent' | 'outdent' | null;
     onSave: () => void;
     isSaving: boolean;
+    puzzleConfigs: Record<number, { id: number; name: string; layout: { rows: number; cols: number } }>;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({
@@ -26,6 +27,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     addingPointType,
     onSave,
     isSaving,
+    puzzleConfigs,
 }) => {
     return (
         <div className="bg-white/70 backdrop-blur-sm sticky top-0 z-20 border-b p-4 -mx-4 -mt-4 mb-4">
@@ -37,9 +39,11 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                         onChange={(e) => onPuzzleChange(parseInt(e.target.value))}
                         className="px-3 py-2 bg-white rounded-lg border border-gray-300 text-black shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     >
-                        <option value="1">Puzzle 1 (2x4)</option>
-                        <option value="2">Puzzle 2 (4x4)</option>
-                        <option value="3">Puzzle 3 (4x4)</option>
+                        {(Object.values(puzzleConfigs || {})).map((config) => (
+                            <option key={config.id} value={config.id}>
+                                {config.name} ({config.layout.rows}x{config.layout.cols})
+                            </option>
+                        ))}
                     </select>
                     <button
                         onClick={onToggleShowIds}

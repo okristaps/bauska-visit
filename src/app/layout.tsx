@@ -3,7 +3,7 @@ import { Lexend_Deca } from "next/font/google";
 import "./globals.css";
 
 import React from "react";
-import PwaProvider from "@/components/PwaProvider";
+
 
 const lexendDeca = Lexend_Deca({
   variable: "--font-lexend-deca",
@@ -38,7 +38,6 @@ export default function RootLayout({
         className={`${lexendDeca.variable} antialiased min-h-screen`}
         style={{ fontFamily: 'var(--font-lexend-deca), sans-serif' }}
       >
-        <PwaProvider />
         <main className="pb-32">
           {children}
         </main>

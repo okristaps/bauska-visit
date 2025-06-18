@@ -6,7 +6,7 @@ import { Toolbar } from './components/Toolbar';
 import { PuzzleGrid } from './components/PuzzleGrid';
 import { ConnectionPreview } from './components/ConnectionPreview';
 import { AllConnectionsPreview } from './components/AllConnectionsPreview';
-import DeviceRestriction from '@/components/DeviceRestriction';
+
 
 const ARROW_KEY_MOVE_AMOUNT = 1;
 
@@ -17,9 +17,7 @@ interface SelectedPoint {
 
 export default function PuzzleConfigToolPage() {
     return (
-        <DeviceRestriction>
-            <PuzzleConfigTool />
-        </DeviceRestriction>
+        <PuzzleConfigTool />
     );
 }
 
@@ -268,6 +266,7 @@ function PuzzleConfigTool() {
                 addingPointType={addingPointType}
                 onSave={handleSave}
                 isSaving={isSaving}
+                puzzleConfigs={puzzleConfigs}
             />
             <main className="flex-1 overflow-hidden p-4 min-h-[400px]">
                 <div className="h-full grid grid-cols-3 gap-4">

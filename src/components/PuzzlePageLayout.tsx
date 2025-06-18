@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import PuzzleGame from '@/components/PuzzleGame';
-import Header from '@/components/Header';
-import FullscreenPrompt from './FullscreenPrompt';
 import { useRouter } from 'next/navigation';
 import { allPuzzleConfigs } from '../config/puzzle1Config';
 
@@ -62,20 +60,16 @@ export default function PuzzlePageLayout({ puzzleId, title, onComplete, infoBoxT
             className="flex flex-col overflow-hidden relative"
             style={{ height: 'calc(var(--vh, 1vh) * 100)' }}
         >
-            <FullscreenPrompt />
-            <Header />
-
             <div className="flex-none h-[6vh] sm:h-[7vh] lg:h-[10vh] grid grid-cols-[1fr_auto_1fr] items-center px-1 sm:px-2 lg:px-4 w-full">
                 <div></div>
                 <div className="flex flex-col items-center">
-                    <p className="text-[10px] sm:text-xs lg:text-base">{puzzleId}. no 4 spelem</p>
+                    <p className="text-[10px] sm:text-xs lg:text-base">{puzzleId}. of 4 puzzles</p>
                     <h1 className="text-sm sm:text-base lg:text-2xl font-bold">{title}</h1>
-                    <p className="text-[10px] sm:text-xs lg:text-base"> Spele saksies tikko ka tu pieskarsies kadam gabalinam</p>
                 </div>
                 <div className="flex justify-end px-2 sm:px-3 lg:px-6">
                     {timerStarted && (
                         <div className="flex flex-col items-end min-w-[70px]">
-                            <div className="text-xs sm:text-sm lg:text-base font-medium text-[#0A2342]">Tavs spēles laiks</div>
+                            <div className="text-xs sm:text-sm lg:text-base font-medium text-[#0A2342]">Your game time</div>
                             <div className="text-2xl sm:text-3xl lg:text-5xl font-extrabold text-[#0A2342] font-mono leading-none">{formatTime(time)}</div>
                         </div>
                     )}
@@ -94,18 +88,13 @@ export default function PuzzlePageLayout({ puzzleId, title, onComplete, infoBoxT
             <div className="container mx-auto px-1 sm:px-2 lg:px-4 py-0.5 sm:py-1 lg:py-2 grid grid-cols-[1fr_auto_1fr]">
                 <div></div>
                 <div className="max-w-lg">
-                    <div className="bg-gray-100 rounded-lg p-1 sm:p-1.5 lg:p-2">
-                        <p className="text-gray-700 text-center text-[9px] sm:text-xs lg:text-sm">
-                            {infoBoxText}
-                        </p>
-                    </div>
                 </div>
                 <div className="flex justify-end items-center">
                     <button
                         className="ml-1 sm:ml-1.5 lg:ml-2 px-2 py-2 sm:px-3 sm:py-2.5 lg:px-4 lg:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-[9px] sm:text-xs lg:text-sm"
                         onClick={() => router.replace("/")}
                     >
-                        {"Beigt spēli / uz sākumu"}
+                        {"End game / to start"}
                     </button>
                 </div>
             </div>
@@ -113,8 +102,8 @@ export default function PuzzlePageLayout({ puzzleId, title, onComplete, infoBoxT
             {showModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-20 transition-colors duration-300">
                     <div className="bg-[#F7F7F2] border-4 border-[#BFA140] rounded-2xl px-6 py-8 w-[90vw] max-w-md flex flex-col items-center shadow-xl animate-modal-in">
-                        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0A2342] mb-2 text-center">Spēle pabeigta!</h2>
-                        <div className="text-base sm:text-lg text-[#0A2342] font-medium mb-1 text-center">Spēles laiks</div>
+                        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0A2342] mb-2 text-center">Game completed!</h2>
+                        <div className="text-base sm:text-lg text-[#0A2342] font-medium mb-1 text-center">Game time</div>
                         <div className="text-4xl sm:text-5xl font-extrabold text-[#0A2342] font-mono mb-6 text-center">{formatTime(time)}</div>
                         <button
                             className="bg-[#183153] text-white rounded-lg px-8 py-3 text-base font-medium hover:bg-[#0A2342] transition-colors"
@@ -127,7 +116,7 @@ export default function PuzzlePageLayout({ puzzleId, title, onComplete, infoBoxT
                                 setShowModal(false);
                             }}
                         >
-                            {puzzleId < allPuzzleConfigs.length ? 'Nākamā spēle' : 'Uz sākumu'}
+                            {puzzleId < allPuzzleConfigs.length ? 'Next puzzle' : 'To start'}
                         </button>
                     </div>
                 </div>
