@@ -1,24 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bauska Visit Puzzle Builder & Game
+
+This repository contains a application for building, editing, and playing interactive jigsaw puzzles, designed for the Bauska Visit project. It includes a puzzle builder tool, a public puzzle game, and utilities for image normalization and puzzle configuration. At the start it was intended as a game only for a specific project. But as it turns out i needed to build a puzzle builder tool to achieve a puzzle game. So here's a tool for you. Not the best builder, but it works :)
+
+## Overview
+
+- **Puzzle Game:** Play interactive jigsaw puzzles based on real-world images and custom configurations.
+- **Puzzle Builder Tool:** Admin interface for creating and editing puzzle piece connections, layouts, and configurations.
+- **Image Normalization:** Utility page for cropping transparent PNGs and preparing puzzle piece assets.
+
+## Features
+
+- Drag-and-drop puzzle gameplay with timer and mobile-friendly UI
+- Admin tool for visually editing puzzle piece connections and layouts
+- Automatic puzzle config generation from PNG assets using Node.js scripts
+- Support for multiple puzzles with different layouts and assets
+- Modern, responsive design using Tailwind CSS and Lexend Deca font
+- Utility for cropping transparent PNGs and batch downloading as ZIP
+
+## Tech Stack
+
+- **Next.js** (App Router, SSR, API routes)
+- **React 19** (functional components, hooks)
+- **TypeScript** (type safety throughout)
+- **Tailwind CSS** (utility-first styling)
+- **next/font/google** (Lexend Deca font)
+- **jszip** (client-side ZIP downloads)
+- **sharp** (Node.js image processing for config generation)
+- **react-dnd** (drag-and-drop in puzzle game)
 
 ## Getting Started
 
-First, run the development server:
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+2. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+3. **Puzzle Builder Tool:**
+   - Visit `/tool` (e.g., [http://localhost:3000/tool](http://localhost:3000/tool))
+   - Requires desktop and development environment
+   - Edit connections, add/remove points, and save puzzle configs
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. **Image Normalization Utility:**
+   - Visit `/tool/image-normalization`
+   - Upload PNGs, crop transparency, and download as ZIP
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+5. **Puzzle Game:**
+   - Visit `/puzzle`, `/puzzle-2`, `/puzzle-3`, etc. to play puzzles
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
+
+- `src/app/` - Next.js app directory (pages, layouts, API routes)
+- `src/components/` - React components (game, builder, UI)
+- `src/config/` - Auto-generated puzzle config files
+- `public/assets/puzzles/` - Puzzle piece PNG assets
+- `scripts/analyzePuzzlePieces.ts` - Node.js script to generate puzzle configs from assets
+
+## Generating Puzzle Configs
+
+To generate a new puzzle config from PNG assets:
+1. Place your PNGs in `public/assets/puzzles/puzzle_X/` (numbered 1.png, 2.png, ...)
+2. Run:
+   ```bash
+   npm run analyze-puzzle puzzle_X
+   ```
+   This will create a config file in `src/config/`.
+
+---
+
+For more details, see the code and comments in each module. Contributions and feedback are welcome!
 
 ## Learn More
 
