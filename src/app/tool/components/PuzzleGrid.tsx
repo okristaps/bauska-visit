@@ -77,40 +77,41 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({
     onDotClick,
 }) => {
     return (
-        <div className="grid gap-8" style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${layout.cols}, min-content)`,
-            justifyContent: 'center',
-            alignItems: 'start'
-        }}>
-            {pieces.map((piece) => (
-                <div
-                    key={piece.id}
-                    className="relative bg-gray-200 rounded-lg p-1 shadow-md hover:shadow-xl transition-shadow cursor-crosshair"
-                    onClick={(e) => onPieceClick(e, piece)}
-                    style={{
-                        width: piece.width * scaleFactor,
-                        height: piece.height * scaleFactor,
-                    }}
-                >
-                    {renderPieceId(piece.id, showIds)}
-                    <img
-                        src={`/assets/puzzles/puzzle_${selectedPuzzleId}/${piece.id}.png`}
-                        alt={`Piece ${piece.id}`}
-                        className="w-full h-full object-contain pointer-events-none"
-                    />
-                    {piece.connections.map((point) =>
-                        renderDot(
-                            point,
-                            piece,
-                            selectedPoint?.pieceId === piece.id && selectedPoint?.pointId === point.id,
-                            linkingPoint?.pieceId === piece.id && linkingPoint?.pointId === point.id,
-                            onDotClick,
-                            scaleFactor
-                        )
-                    )}
-                </div>
-            ))}
+        <div className="w-full overflow-x-auto min-w-0">
+            <div className="inline-grid gap-8" style={{
+                gridTemplateColumns: `repeat(${layout.cols}, min-content)`,
+                justifyContent: 'center',
+                alignItems: 'start'
+            }}>
+                {pieces.map((piece) => (
+                    <div
+                        key={piece.id}
+                        className="relative bg-gray-200 rounded-lg p-1 shadow-md hover:shadow-xl transition-shadow cursor-crosshair"
+                        onClick={(e) => onPieceClick(e, piece)}
+                        style={{
+                            width: piece.width * scaleFactor,
+                            height: piece.height * scaleFactor,
+                        }}
+                    >
+                        {renderPieceId(piece.id, showIds)}
+                        <img
+                            src={`/assets/puzzles/puzzle_${selectedPuzzleId}/${piece.id}.png`}
+                            alt={`Piece ${piece.id}`}
+                            className="w-full h-full object-contain pointer-events-none"
+                        />
+                        {piece.connections.map((point) =>
+                            renderDot(
+                                point,
+                                piece,
+                                selectedPoint?.pieceId === piece.id && selectedPoint?.pointId === point.id,
+                                linkingPoint?.pieceId === piece.id && linkingPoint?.pointId === point.id,
+                                onDotClick,
+                                scaleFactor
+                            )
+                        )}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }; 
