@@ -10,11 +10,10 @@ This repository contains a application for building, editing, and playing intera
 
 ## Features
 
-- Drag-and-drop puzzle gameplay with timer and mobile-friendly UI
+- Drag-and-drop puzzle gameplay with timer.
 - Admin tool for visually editing puzzle piece connections and layouts
 - Automatic puzzle config generation from PNG assets using Node.js scripts
-- Support for multiple puzzles with different layouts and assets
-- Modern, responsive design using Tailwind CSS and Lexend Deca font
+- Support for multiple puzzles with different layouts.
 - Utility for cropping transparent PNGs and batch downloading as ZIP
 
 ## Tech Stack
